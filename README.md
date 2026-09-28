@@ -210,3 +210,23 @@ Después de mezclar, se actualiza la rama local con `git pull` en `main`.
 - [ ] Casos de prueba y tabla comparativa voraz vs. A*
 - [ ] Informe
 - [ ] Presentación
+
+## Convención de ramas
+
+Cada tarea se trabaja en su propia rama, nombrada así:
+
+Ejemplos:
+- `feature/2-arquitectura`
+- `feature/3-cargador-csv`
+- `feature/5-busqueda-avara`
+
+### Flujo de trabajo
+1. Crear la rama desde `main` actualizado:
+```bash
+   git checkout main
+   git pull
+   git checkout -b feature/3-cargador-csv
+```
+2. Hacer commits pequeños y con mensajes claros.
+3. Subir la rama y abrir un Pull Request hacia `main`.
+4. Esperar la aprobación de al menos un compañero antes de mergear.
