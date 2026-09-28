@@ -1,6 +1,11 @@
-# Búsqueda voraz entre 20 municipios de Colombia
+# Búsqueda voraz y A* entre 20 municipios de Colombia
 
-Proyecto en equipo que modela 20 municipios de Colombia como un grafo e implementa la **búsqueda voraz (greedy best-first search)** para encontrar una ruta entre un municipio de origen y uno de destino, usando como heurística la **distancia en línea recta**. Los resultados se comparan con un algoritmo que sí garantiza la ruta óptima (Dijkstra o A*).
+Proyecto en equipo que modela 20 municipios de Colombia como un grafo e implementa dos algoritmos de búsqueda informada para encontrar una ruta entre un municipio de origen y uno de destino: la **búsqueda voraz (greedy best-first search)** y **A\***. Ambos usan como heurística la **distancia en línea recta**, y sus resultados se comparan entre sí.
+
+- **Curso:** ________________
+- **Universidad:** ________________
+- **Docente:** ________________
+- **Periodo:** ________________
 
 ---
 
@@ -25,15 +30,18 @@ Proyecto en equipo que modela 20 municipios de Colombia como un grafo e implemen
 Dado un municipio de origen **A** y un municipio de destino **B**, el programa debe:
 
 - Encontrar una ruta de A a B usando búsqueda voraz.
+- Encontrar una ruta de A a B usando A*.
 - Mostrar la ruta, los nodos visitados y la distancia total recorrida por carretera.
-- Compararla con la ruta óptima para analizar cuándo y por qué la búsqueda voraz falla.
+- Comparar ambos algoritmos (ruta encontrada, kilómetros y nodos expandidos) para analizar cuándo y por qué la búsqueda voraz no encuentra la mejor ruta y A* sí.
 
 ## 2. Cómo funciona
 
 - **Grafo:** cada municipio es un nodo. Cada arista une dos municipios conectados directamente por una carretera principal (sin pasar por otro municipio de la lista) y guarda los kilómetros por carretera.
 - **Heurística h(n):** distancia en línea recta desde el nodo n hasta el destino. No se anota a mano: se calcula con la **fórmula de Haversine** a partir de la latitud y la longitud de cada municipio.
-- **Búsqueda voraz:** en cada paso expande el nodo de la frontera con menor h(n). Lleva un conjunto de nodos visitados y un registro del nodo anterior para reconstruir la ruta.
-- **Limitación conocida:** la búsqueda voraz no garantiza la ruta óptima ni evita los callejones sin salida. Por eso se compara con Dijkstra o A*.
+- **Búsqueda voraz:** en cada paso expande el nodo de la frontera con menor h(n), es decir, el que parece más cerca del destino en línea recta. Ignora lo que ya se recorrió. Lleva un conjunto de nodos visitados y un registro del nodo anterior para reconstruir la ruta.
+- **A\*:** en cada paso expande el nodo con menor f(n) = g(n) + h(n), donde g(n) son los kilómetros por carretera ya recorridos desde el origen y h(n) es la línea recta estimada hasta el destino. Al sumar lo recorrido y lo que falta, encuentra la ruta de menor distancia por carretera, siempre que h(n) nunca sobrestime la distancia real (heurística admisible).
+- **Por qué h(n) es admisible aquí:** los kilómetros por carretera de cada conexión son mayores que la línea recta entre sus dos municipios (se comprobó con los datos), y un camino nunca es más corto que la línea recta.
+- **Limitación de la búsqueda voraz:** no garantiza la ruta óptima y puede quedar atrapada en callejones sin salida. Es lo que se quiere mostrar al compararla con A*.
 
 ## 3. Municipios seleccionados
 
@@ -57,7 +65,7 @@ busqueda-voraz-municipios/
 └── src/main/java/
     ├── modelo/            Municipio, Grafo
     ├── datos/             lector de los archivos CSV
-    ├── algoritmos/        CalculadoraDistancia, BusquedaVoraz, comparación
+    ├── algoritmos/        CalculadoraDistancia, BusquedaVoraz, AEstrella
     └── ui/                Main y menú de consola
 ```
 
@@ -125,7 +133,7 @@ java -cp out ui.Main
 | **Datos y distancias** | Consolidar las hojas en los CSV, verificar que el grafo quede conectado, implementar Haversine | `feature-datos` |
 | **Estructura e interfaz** | Clases `Municipio` y `Grafo`, lector de CSV, menú de consola | `feature-modelo` |
 | **Búsqueda voraz** | `BusquedaVoraz` con frontera, visitados y casos límite; pseudocódigo | `feature-voraz` |
-| **Comparación, pruebas e informe** | Dijkstra o A*, casos de prueba, tabla de resultados, unificar el informe y la presentación | `feature-comparacion` y `docs-informe` |
+| **A\*, pruebas e informe** | `AEstrella`, casos de prueba, tabla comparativa voraz vs. A\*, unificar el informe y la presentación | `feature-astar` y `docs-informe` |
 
 **Quién necesita qué de quién**
 
@@ -133,10 +141,10 @@ java -cp out ui.Main
 |---|---|---|
 | Todos | Datos y distancias | Coordenadas y conexiones de sus 5 municipios |
 | Datos y distancias | Estructura e interfaz | Archivos CSV y su formato |
-| Datos y distancias | Búsqueda voraz | Método de Haversine |
-| Estructura e interfaz | Búsqueda voraz y comparación | Clases `Municipio` y `Grafo` (versión básica al inicio) |
+| Datos y distancias | Búsqueda voraz y A* | Método de Haversine |
+| Estructura e interfaz | Búsqueda voraz y A* | Clases `Municipio` y `Grafo` (versión básica al inicio) |
 | Búsqueda voraz | Estructura e interfaz | Clase de búsqueda para conectar al menú |
-| Todos | Comparación, pruebas e informe | Su sección del informe |
+| Todos | A*, pruebas e informe | Su sección del informe |
 
 ## 8. Flujo de ramas y trabajo en Git
 
@@ -150,21 +158,21 @@ gitGraph
     branch feature-datos
     branch feature-modelo
     branch feature-voraz
-    branch feature-comparacion
+    branch feature-astar
     checkout feature-datos
     commit id: "CSV y Haversine"
     checkout feature-modelo
     commit id: "Municipio y Grafo"
     checkout feature-voraz
     commit id: "Busqueda voraz"
-    checkout feature-comparacion
-    commit id: "Dijkstra o A*"
+    checkout feature-astar
+    commit id: "A*"
     commit id: "Pruebas"
     checkout main
     merge feature-datos
     merge feature-modelo
     merge feature-voraz
-    merge feature-comparacion
+    merge feature-astar
 ```
 
 **Pasos para trabajar**
@@ -202,8 +210,8 @@ Después de mezclar, se actualiza la rama local con `git pull` en `main`.
 - [ ] Modelo del grafo y lector de datos
 - [ ] Haversine
 - [ ] Búsqueda voraz
-- [ ] Algoritmo de comparación (Dijkstra o A*)
+- [ ] A*
 - [ ] Interfaz de consola
-- [ ] Casos de prueba y tabla de resultados
+- [ ] Casos de prueba y tabla comparativa voraz vs. A*
 - [ ] Informe
 - [ ] Presentación
