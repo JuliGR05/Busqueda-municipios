@@ -2,11 +2,6 @@
 
 Proyecto en equipo que modela 20 municipios de Colombia como un grafo e implementa dos algoritmos de búsqueda informada para encontrar una ruta entre un municipio de origen y uno de destino: la **búsqueda voraz (greedy best-first search)** y **A\***. Ambos usan como heurística la **distancia en línea recta**, y sus resultados se comparan entre sí.
 
-- **Curso:** ________________
-- **Universidad:** ________________
-- **Docente:** ________________
-- **Periodo:** ________________
-
 ---
 
 ## Tabla de contenido
