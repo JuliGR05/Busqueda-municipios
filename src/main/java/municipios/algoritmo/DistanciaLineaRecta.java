@@ -5,7 +5,7 @@ import municipios.modelo.Municipio;
 // Heurística h(n): distancia en línea recta (Haversine) entre dos municipios
 
 public class DistanciaLineaRecta implements Heuristica {
-    private static final double RADIO_TIERRA_KM = 6317.0;
+    private static final double RADIO_TIERRA_KM = 6371.0;
 
     @Override 
     public double h(Municipio actual, Municipio destino){

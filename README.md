@@ -33,10 +33,10 @@ Dado un municipio de origen **A** y un municipio de destino **B**, el programa d
 
 - **Grafo:** cada municipio es un nodo. Cada arista une dos municipios conectados directamente por una carretera principal (sin pasar por otro municipio de la lista) y guarda los kilómetros por carretera.
 - **Heurística h(n):** distancia en línea recta desde el nodo n hasta el destino. No se anota a mano: se calcula con la **fórmula de Haversine** a partir de la latitud y la longitud de cada municipio.
-- **Búsqueda voraz:** en cada paso expande el nodo de la frontera con menor h(n), es decir, el que parece más cerca del destino en línea recta. Ignora lo que ya se recorrió. Lleva un conjunto de nodos visitados y un registro del nodo anterior para reconstruir la ruta.
+- **Búsqueda avara:** en cada paso expande el nodo de la frontera con menor h(n), es decir, el que parece más cerca del destino en línea recta. Ignora lo que ya se recorrió. Lleva un conjunto de nodos visitados y un registro del nodo anterior para reconstruir la ruta.
 - **A\*:** en cada paso expande el nodo con menor f(n) = g(n) + h(n), donde g(n) son los kilómetros por carretera ya recorridos desde el origen y h(n) es la línea recta estimada hasta el destino. Al sumar lo recorrido y lo que falta, encuentra la ruta de menor distancia por carretera, siempre que h(n) nunca sobrestime la distancia real (heurística admisible).
 - **Por qué h(n) es admisible aquí:** los kilómetros por carretera de cada conexión son mayores que la línea recta entre sus dos municipios (se comprobó con los datos), y un camino nunca es más corto que la línea recta.
-- **Limitación de la búsqueda voraz:** no garantiza la ruta óptima y puede quedar atrapada en callejones sin salida. Es lo que se quiere mostrar al compararla con A*.
+- **Limitación de la búsqueda avara:** no garantiza la ruta óptima y puede quedar atrapada en callejones sin salida. Es lo que se quiere mostrar al compararla con A*.
 
 ## 3. Municipios seleccionados
 
@@ -49,20 +49,19 @@ Dado un municipio de origen **A** y un municipio de destino **B**, el programa d
 
 ## 4. Estructura del repositorio
 
-```
-busqueda-voraz-municipios/
+busqueda-municipios/
 ├── README.md
 ├── .gitignore
-├── data/                  archivos CSV con municipios y conexiones
+├── data/                     CSV con municipios y conexiones
 │   ├── municipios.csv
 │   └── conexiones.csv
-├── docs/                  guía de trabajo, informe y presentación
-└── src/main/java/
-    ├── modelo/            Municipio, Grafo
-    ├── datos/             lector de los archivos CSV
-    ├── algoritmos/        CalculadoraDistancia, BusquedaVoraz, AEstrella
-    └── ui/                Main y menú de consola
-```
+├── docs/                     hoja de cálculo, informe y presentación
+└── src/main/java/municipios/
+    ├── modelo/               Municipio, Grafo
+    ├── datos/                CargadorCSV
+    ├── algoritmo/            Heuristica, DistanciaLineaRecta,
+    │                         BusquedaAvara, ResultadoBusqueda
+    └── ui/                   Main (issue #7, pendiente)
 
 ## 5. Formato de los datos
 
@@ -96,7 +95,10 @@ Ejemplo:
 Santa Marta,Barranquilla,106,Google Maps
 ```
 
-**Convención de números:** en los CSV del repositorio las columnas se separan con coma y los decimales llevan **punto**. La hoja compartida de Google Sheets usa coma decimal, así que antes de subir los archivos hay que exportarlos desde una copia con configuración regional de Estados Unidos, o reemplazar las comas decimales por puntos. Cada conexión aparece **una sola vez**.
+**Convención de números:** los CSV del repositorio usan coma como separador
+y **punto** como decimal. El cargador también acepta `;` como separador y
+coma decimal, pero se recomienda mantener el formato de los archivos actuales.
+Cada conexión aparece **una sola vez**.
 
 ## 6. Cómo compilar y ejecutar
 
@@ -104,22 +106,15 @@ Requisitos: JDK 17 o superior (ajustar si el curso exige otra versión). Verific
 
 Desde la raíz del repositorio:
 
-```bash
 mkdir -p out
-javac -d out $(find src/main/java -name "*.java")
-java -cp out ui.Main
+javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
+java -cp out municipios.ui.Main
 ```
 
-> Estas instrucciones se actualizarán cuando el código esté listo.
+> municipios.ui.Main se agrega con el issue #7. Hasta entonces solo se puede compilar." También aclara que se necesita el JDK completo (no solo el JRE) para tener javac.
 
 ## 7. Equipo y división del trabajo
 
-| Integrante | Usuario de GitHub | Rol |
-|---|---|---|
-| Juliana | @JuliGR05 | ________________ |
-| ________________ | @________ | ________________ |
-| ________________ | @________ | ________________ |
-| ________________ | @________ | ________________ |
 
 **Parte común (todos):** cada integrante escoge 5 municipios, consigue sus coordenadas y las conexiones con sus vecinos directos (con los km por carretera) y los sube a la hoja compartida. Después redacta su sección del informe.
 
@@ -147,35 +142,13 @@ java -cp out ui.Main
 - **Una rama por responsabilidad**, creada desde `main`, con los nombres de la tabla anterior.
 - Cuando una parte está lista, se abre un **Pull Request** hacia `main` y otro integrante lo revisa antes de mezclarlo.
 
-```mermaid
-gitGraph
-    commit id: "Estructura inicial"
-    branch feature-datos
-    branch feature-modelo
-    branch feature-voraz
-    branch feature-astar
-    checkout feature-datos
-    commit id: "CSV y Haversine"
-    checkout feature-modelo
-    commit id: "Municipio y Grafo"
-    checkout feature-voraz
-    commit id: "Busqueda voraz"
-    checkout feature-astar
-    commit id: "A*"
-    commit id: "Pruebas"
-    checkout main
-    merge feature-datos
-    merge feature-modelo
-    merge feature-voraz
-    merge feature-astar
-```
 
 **Pasos para trabajar**
 
 ```bash
 git checkout main
 git pull                                # traer lo último antes de empezar
-git checkout -b feature-voraz           # crear tu rama (o cambiar a ella)
+git checkout -b feature/5-busqueda-avara           
 # ...programar...
 git add .
 git commit -m "Agrega búsqueda voraz con conjunto de visitados"
@@ -190,7 +163,7 @@ Después de mezclar, se actualiza la rama local con `git pull` en `main`.
 - **Commits:** en español, en imperativo y con mensajes claros ("Agrega clase Municipio"). Commits pequeños y frecuentes.
 - **Java:** clases en `PascalCase`, métodos y variables en `camelCase`, comentarios Javadoc en los métodos públicos.
 - **Distancias:** siempre en kilómetros.
-- **Firma del método de búsqueda acordada:** `List<Municipio> buscar(Municipio origen, Municipio destino)`.
+- **Firma del método de búsqueda:** `ResultadoBusqueda buscar(Municipio origen, Municipio destino)`
 - **Archivos generados** (`out/`, archivos de IDE) no se suben; están en el `.gitignore`.
 
 ## 10. Fuentes de los datos
@@ -200,11 +173,11 @@ Después de mezclar, se actualiza la rama local con `git pull` en `main`.
 
 ## 11. Estado del proyecto
 
-- [ ] Los 20 municipios tienen coordenadas y conexiones en la hoja compartida
-- [ ] CSV consolidados en `data/`
-- [ ] Modelo del grafo y lector de datos
-- [ ] Haversine
-- [ ] Búsqueda voraz
+- [X] Los 20 municipios tienen coordenadas y conexiones en la hoja compartida
+- [X] CSV consolidados en `data/`
+- [X] Modelo del grafo y lector de datos
+- [X] Haversine
+- [X] Búsqueda voraz
 - [ ] A*
 - [ ] Interfaz de consola
 - [ ] Casos de prueba y tabla comparativa voraz vs. A*

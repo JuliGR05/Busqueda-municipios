@@ -1,7 +1,7 @@
 package municipios.modelo;
 
 public class Municipio {
-    private String nombre;
+    private final String nombre;
     private double latitud;
     private double longitud;
 
@@ -18,7 +18,7 @@ public class Municipio {
     @Override
     public String toString() { return nombre; }
 
-     /** Dos municipios son iguales si tienen el mismo nombre. */
+     //Dos municipios son iguales si tienen el mismo nombre.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

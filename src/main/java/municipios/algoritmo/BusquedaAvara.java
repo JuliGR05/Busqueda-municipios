@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Comparator;
 
 /**
  * Búsqueda avara (greedy best-first) entre municipios.
@@ -86,8 +87,9 @@ public class BusquedaAvara {
         }
 
         // Frontera ordenada por h(n), menor primero
-        PriorityQueue<Nodo> frontera =
-                new PriorityQueue<>((a, b) -> Double.compare(a.h, b.h));
+        PriorityQueue<Nodo> frontera = new PriorityQueue<>(
+        Comparator.comparingDouble((Nodo n) -> n.h)
+                  .thenComparing(n -> n.municipio.getNombre()));
         Set<Municipio> visitados = new HashSet<>();
         int nodosExpandidos = 0;
 
