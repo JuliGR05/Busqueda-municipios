@@ -82,9 +82,9 @@ Tiempo medio de una búsqueda, con 200 repeticiones por par para que la medida s
 
 | Algoritmo | Microsegundos por búsqueda |
 |---|---:|
-| Búsqueda avara | 27.3 |
-| A* | 23.2 |
-| Dijkstra | 71.8 |
+| Búsqueda avara | 3.5 |
+| A* | 3.1 |
+| Dijkstra | 6.0 |
 
 Con 20 municipios y 25 conexiones, los tres algoritmos corren en microsegundos. La diferencia de tiempo no es un motivo para escoger uno: lo que decide es la calidad de la ruta.
 
