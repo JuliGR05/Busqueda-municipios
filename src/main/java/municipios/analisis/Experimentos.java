@@ -510,7 +510,9 @@ public final class Experimentos {
         double mediaUsEstrella = filas.stream().mapToDouble(f -> f.aEstrella().microsegundos()).average().orElse(0);
         double mediaUsDijkstra = filas.stream().mapToDouble(Fila::microsegundosDijkstra).average().orElse(0);
         sb.append("Tiempo medio de una búsqueda, con ").append(repeticiones)
-          .append(" repeticiones por par para que la medida sea estable:\n\n");
+          .append(" repeticiones por par para que la medida sea estable. **Estas tres cifras cambian ")
+          .append("en cada máquina**: sirven para comparar el orden de magnitud, no para afirmar ")
+          .append("cuál es " + '"' + "más rápido" + '"' + ".\n\n");
         sb.append("| Algoritmo | Microsegundos por búsqueda |\n|---|---:|\n");
         sb.append(String.format(Locale.US, "| Búsqueda avara | %.1f |%n", mediaUsAvara));
         sb.append(String.format(Locale.US, "| A* | %.1f |%n", mediaUsEstrella));
@@ -519,6 +521,10 @@ public final class Experimentos {
           .append(totalConexiones()).append(" conexiones, los tres algoritmos corren en microsegundos. ")
           .append("La diferencia de tiempo no es un motivo para escoger uno: lo que decide es la ")
           .append("calidad de la ruta.\n\n");
+        sb.append("> Las cifras de tiempo de esta tabla y del CSV dependen de la máquina donde se ");
+        sb.append("midieron, así que cambian cada vez que se regeneran. Los costos, los caminos, los ");
+        sb.append("nodos expandidos y los porcentajes de desvío no dependen de la máquina: son ");
+        sb.append("siempre los mismos.\n\n");
 
         sb.append("## 6. Conclusiones\n\n");
         sb.append("1. **La búsqueda avara es rápida pero no confiable.** Expande poco, pero en ")
@@ -634,6 +640,7 @@ public final class Experimentos {
                 + e.tablaMarkdown(filas)
                 + "\n`A* ahorra nodos` es la diferencia entre los municipios expandidos por Dijkstra y "
                 + "los expandidos por A*.\n"
-                + "Los caminos completos, con los tiempos, están en `resultados-experimentos.csv`.\n";
+                + "Los caminos completos están en `resultados-experimentos.csv`, que además trae los "
+                + "tiempos; esas columnas cambian según la máquina donde se mida.\n";
     }
 }

@@ -141,8 +141,11 @@ public class ValidadorHeuristica {
     }
 
     /**
-     * Ejecución manual sin UI (la UI llega en el issue #7):
-     * {@code java -cp out municipios.algoritmo.ValidadorHeuristica}.
+     * Ejecución directa sin pasar por el menú, útil para citar el reporte en el informe:
+     * <pre>
+     * mvn -q compile
+     * java -cp target/classes municipios.algoritmo.ValidadorHeuristica [carpeta-de-datos]
+     * </pre>
      */
     public static void main(String[] args) throws Exception {
         Path base = Paths.get(args.length > 0 ? args[0] : "data");

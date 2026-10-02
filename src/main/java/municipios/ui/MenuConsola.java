@@ -14,10 +14,10 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Menú por consola (issue #7): lista los municipios, pide origen y destino (por número
- * o por nombre), ejecuta el algoritmo elegido (avara, A* o ambos) y muestra camino,
- * costo total y nodos expandidos. Toda entrada inválida se corrige con un mensaje y
- * se vuelve a pedir; el programa nunca se cae por lo que escriba el usuario.
+ * Menú por consola: lista los municipios, pide origen y destino (por número o por nombre),
+ * ejecuta el algoritmo elegido (avara, A* o ambos) y muestra camino, costo total y nodos
+ * expandidos. Toda entrada inválida se corrige con un mensaje y se vuelve a pedir; el programa
+ * nunca se cae por lo que escriba el usuario.
  *
  * <p>Recibe la entrada y la salida por parámetro para poder probarlo sin teclado.</p>
  */
@@ -41,7 +41,6 @@ public class MenuConsola {
         }
     }
 
-    private static final String NOMBRE_A_ESTRELLA = "A*";
     private static final double TOLERANCIA_KM = 0.05;
 
     private final List<Municipio> municipios;
@@ -54,13 +53,14 @@ public class MenuConsola {
     /**
      * @param grafo     datos ya cargados (no null)
      * @param avara     búsqueda avara (no null)
-     * @param aEstrella A*; {@code null} mientras no esté integrado (issue #15)
+     * @param aEstrella A* (no null)
      * @param in        de dónde se lee lo que escribe el usuario
      * @param out       dónde se muestran los mensajes
      */
     public MenuConsola(Grafo grafo, Algoritmo avara, Algoritmo aEstrella, BufferedReader in, PrintStream out) {
-        if (grafo == null || avara == null || in == null || out == null) {
-            throw new IllegalArgumentException("Grafo, búsqueda avara, entrada y salida son obligatorios.");
+        if (grafo == null || avara == null || aEstrella == null || in == null || out == null) {
+            throw new IllegalArgumentException(
+                    "Grafo, búsqueda avara, A*, entrada y salida son obligatorios.");
         }
         this.grafo = grafo;
         this.municipios = grafo.getMunicipios();
@@ -117,11 +117,10 @@ public class MenuConsola {
 
     /** @return los algoritmos a ejecutar, o null si el usuario decide volver al menú */
     private List<Algoritmo> elegirAlgoritmos() {
-        String pendiente = aEstrella == null ? "  (aún no disponible)" : "";
         out.println("\nAlgoritmo de búsqueda:");
         out.println("  1) " + avara.nombre());
-        out.println("  2) " + NOMBRE_A_ESTRELLA + pendiente);
-        out.println("  3) Ambos, para comparar lado a lado" + pendiente);
+        out.println("  2) " + aEstrella.nombre());
+        out.println("  3) Ambos, para comparar lado a lado");
         while (true) {
             String texto = leer("Elige el algoritmo (1-3, 0 para volver): ");
             switch (normalizar(texto)) {
@@ -132,24 +131,14 @@ public class MenuConsola {
                     return List.of(avara);
                 }
                 case "2", "a*", "a", "astar" -> {
-                    if (aEstrella != null) {
-                        return List.of(aEstrella);
-                    }
-                    avisarAEstrellaPendiente();
+                    return List.of(aEstrella);
                 }
                 case "3", "ambos" -> {
-                    if (aEstrella != null) {
-                        return List.of(avara, aEstrella);
-                    }
-                    avisarAEstrellaPendiente();
+                    return List.of(avara, aEstrella);
                 }
                 default -> out.println("Opción no válida: '" + texto + "'. Escribe 1, 2 o 3.");
             }
         }
-    }
-
-    private void avisarAEstrellaPendiente() {
-        out.println("A* todavía no está integrado en el programa (issue #15). Elige 1 o escribe 0 para volver.");
     }
 
     /**

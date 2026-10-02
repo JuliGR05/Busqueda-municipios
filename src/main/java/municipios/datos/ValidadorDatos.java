@@ -31,17 +31,18 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 /**
- 
- * <p>Compilar y ejecutar, desde la raíz del repositorio:</p>
+ * Revisa los CSV de municipios y conexiones y reporta los problemas que encuentra, agrupados por
+ * verificacion: nombres duplicados o escritos de dos formas, distancias asimetricas, valores vacios
+ * o negativos, decimales inconsistentes, coordenadas fuera de Colombia, municipios aislados, grafo
+ * desconectado y conexiones por carretera mas cortas que la linea recta.
+ *
+ * <p>Compilar y ejecutar, desde la raiz del repositorio:</p>
  * <pre>
- * mkdir -p out
- * javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
- * java -cp out municipios.datos.ValidadorDatos
- * java -cp out municipios.datos.ValidadorDatos ruta/municipios.csv ruta/conexiones.csv
+ * mvn -q compile
+ * java -cp target/classes municipios.datos.ValidadorDatos
+ * java -cp target/classes municipios.datos.ValidadorDatos ruta/municipios.csv ruta/conexiones.csv
  * </pre>
- * <p>Código de salida: 0 si no hay errores, 1 si hay alguno (las advertencias no cuentan).</p>
- 
- 
+ * <p>Codigo de salida: 0 si no hay errores, 1 si hay alguno (las advertencias no cuentan).</p>
  */
 public class ValidadorDatos {
 
@@ -392,7 +393,7 @@ public class ValidadorDatos {
      */
     public static void main(String[] args) {
         if (args.length != 0 && args.length != 2) {
-            System.err.println("Uso: java -cp out municipios.datos.ValidadorDatos [<municipios.csv> <conexiones.csv>]");
+            System.err.println("Uso: java -cp target/classes municipios.datos.ValidadorDatos [<municipios.csv> <conexiones.csv>]");
             System.exit(2);
         }
         ValidadorDatos validador = args.length == 2 ? new ValidadorDatos(args[0], args[1]) : new ValidadorDatos();
