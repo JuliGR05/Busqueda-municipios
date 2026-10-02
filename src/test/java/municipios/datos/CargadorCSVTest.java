@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -14,9 +15,10 @@ import municipios.modelo.Grafo;
 import municipios.modelo.Municipio;
 
 /**
- * Los CSV se escriben en una carpeta temporal dentro de cada prueba, así no
- * dependen de archivos externos. Si prefieres archivos fijos, cópialos a
- * test/resources/ y léelos con getResource.
+ * Los CSV se escriben en una carpeta temporal dentro de cada prueba, así no dependen de
+ * archivos externos. Además, al final se cargan los archivos fijos de
+ * {@code src/test/resources/csv/} para comprobar que el cargador también funciona con
+ * archivos en el classpath.
  */
 class CargadorCSVTest {
 
@@ -138,5 +140,59 @@ class CargadorCSVTest {
     void archivoInexistente() {
         Path noExiste = tmp.resolve("no_existe.csv");
         assertThrows(IOException.class, () -> CargadorCSV.cargarGrafo(noExiste, noExiste));
+    }
+
+    // ------------------------------------------------------------------ archivos de src/test/resources
+
+    /** Copia un recurso de {@code src/test/resources/csv/} a la carpeta temporal. */
+    private Path recurso(String nombre) throws IOException {
+        try (java.io.InputStream in = CargadorCSVTest.class.getResourceAsStream("/csv/" + nombre)) {
+            assertNotNull(in, () -> "falta el recurso /csv/" + nombre + " en src/test/resources");
+            Path destino = tmp.resolve(nombre);
+            Files.copy(in, destino);
+            return destino;
+        }
+    }
+
+    @Test
+    void cargaLosArchivosDePruebaDelClasspath() throws IOException {
+        Grafo g = CargadorCSV.cargarGrafo(recurso("municipios-validos.csv"),
+                recurso("conexiones-validas.csv"));
+
+        assertEquals(3, g.getMunicipios().size());
+        assertEquals(List.of("Medellín", "Cali", "Pasto"),
+                g.getMunicipios().stream().map(Municipio::getNombre).toList());
+        assertEquals(274.0, g.getDistancia(g.buscarPorNombre("Medellín"),
+                g.buscarPorNombre("Cali")), 1e-9);
+        assertEquals(443.0, g.getDistancia(g.buscarPorNombre("Pasto"),
+                g.buscarPorNombre("Cali")), 1e-9);
+    }
+
+    @Test
+    void cargaElArchivoDePruebaConComaDecimalYSeparadorPuntoYComa() throws IOException {
+        Grafo g = CargadorCSV.cargarGrafo(recurso("municipios-decimal-con-coma.csv"),
+                recurso("conexiones-validas.csv"));
+
+        assertEquals(3, g.getMunicipios().size());
+        assertEquals(6.2448, g.buscarPorNombre("Medellín").getLatitud(), 1e-9);
+        assertEquals(-77.2781, g.buscarPorNombre("Pasto").getLongitud(), 1e-9);
+    }
+
+    @Test
+    void elArchivoDePruebaConFilaTruncadaIndicaLaLinea() throws IOException {
+        Path con = recurso("conexiones-validas.csv");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> CargadorCSV.cargarGrafo(recurso("municipios-fila-truncada.csv"), con));
+        assertTrue(e.getMessage().contains("línea 3"), e.getMessage());
+        assertTrue(e.getMessage().contains("5 columnas"), e.getMessage());
+    }
+
+    @Test
+    void elArchivoDePruebaConKmInvalidoIndicaElCampo() throws IOException {
+        Path mun = recurso("municipios-validos.csv");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> CargadorCSV.cargarGrafo(mun, recurso("conexiones-km-invalido.csv")));
+        assertTrue(e.getMessage().contains("'km'"), e.getMessage());
+        assertTrue(e.getMessage().contains("línea 3"), e.getMessage());
     }
 }
