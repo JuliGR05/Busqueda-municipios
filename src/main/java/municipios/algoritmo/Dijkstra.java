@@ -17,10 +17,10 @@ import java.util.Set;
 /**
  * Dijkstra sobre el grafo de municipios.
  *
- * <p>Se usa como "verdad" para validar la heurística del issue #6:
- * el costo mínimo real entre dos municipios es el que debe compararse con
- * h(n, destino) al comprobar admisibilidad. Más adelante el issue #15 (A*)
- * debe coincidir en costo con Dijkstra en todos los pares.</p>
+ * <p>Se usa como "verdad" para validar la heurística del issue #6: el costo mínimo real entre
+ * dos municipios es el que debe compararse con h(n, destino) al comprobar admisibilidad. Como
+ * A* es óptimo con una heurística admisible y consistente, su resultado tiene que coincidir con
+ * el de Dijkstra, y esa es la comparación que hacen el issue #15 y los experimentos del #9.</p>
  *
  * <p>Desempate determinista: a igual distancia, sale primero el municipio con
  * nombre menor (orden alfabético), para que los reportes sean reproducibles.</p>

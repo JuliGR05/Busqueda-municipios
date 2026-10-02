@@ -1,6 +1,7 @@
 package municipios.ui;
 
 import municipios.algoritmo.BusquedaAvara;
+import municipios.algoritmo.BusquedaEstrella;
 import municipios.algoritmo.DistanciaLineaRecta;
 import municipios.algoritmo.Heuristica;
 import municipios.datos.CargadorCSV;
@@ -14,19 +15,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Punto de entrada del programa. Carga los CSV al iniciar y abre el menú por consola.
+ * Punto de entrada del programa. Carga los CSV al iniciar y abre el menú por consola con las
+ * dos búsquedas informadas ya conectadas: la búsqueda avara y A*.
  *
- * <p>Compilar (desde la raíz del repositorio):</p>
+ * <p>Compilar (desde la raíz del repositorio), con Maven:</p>
  * <pre>
- * Git Bash / Linux / Mac:  mkdir -p out
- *                          javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
- * PowerShell (Windows):    mkdir out
- *                          javac -encoding UTF-8 -d out (Get-ChildItem -Recurse src\main\java -Filter *.java).FullName
+ * mvn -q compile
  * </pre>
  * <p>Ejecutar:</p>
  * <pre>
- * java -cp out municipios.ui.Main              (usa la carpeta data/)
- * java -cp out municipios.ui.Main otra/carpeta (usa municipios.csv y conexiones.csv de esa carpeta)
+ * java -cp target/classes municipios.ui.Main              (usa la carpeta data/)
+ * java -cp target/classes municipios.ui.Main otra/carpeta (usa municipios.csv y conexiones.csv de esa carpeta)
  * </pre>
  * Si los CSV no se pueden cargar muestra el motivo y termina con código 1.
  */
@@ -37,14 +36,13 @@ public class Main {
         Grafo grafo = cargarDatos(carpeta);
 
         Heuristica heuristica = new DistanciaLineaRecta();
-        BusquedaAvara avara = new BusquedaAvara(grafo, heuristica);
-        Algoritmo busquedaAvara = new Algoritmo("Búsqueda avara", avara::buscar);
-        // TODO issue #15: cuando exista A*, reemplazar null por
-        //   new Algoritmo("A*", new AEstrella(grafo, heuristica)::buscar)
-        Algoritmo aEstrella = null;
+        Algoritmo busquedaAvara =
+                new Algoritmo("Búsqueda avara", new BusquedaAvara(grafo, heuristica)::buscar);
+        Algoritmo busquedaAEstrella =
+                new Algoritmo("A*", new BusquedaEstrella(grafo, heuristica)::buscar);
 
         BufferedReader entrada = new BufferedReader(new InputStreamReader(System.in));
-        new MenuConsola(grafo, busquedaAvara, aEstrella, entrada, System.out).ejecutar();
+        new MenuConsola(grafo, busquedaAvara, busquedaAEstrella, entrada, System.out).ejecutar();
     }
 
     private static Grafo cargarDatos(Path carpeta) {
@@ -63,8 +61,8 @@ public class Main {
     private static void terminarConError(String motivo) {
         System.err.println("No se pudieron cargar los datos: " + motivo);
         System.err.println("Ejecuta el programa desde la raíz del repositorio o indica la carpeta con los CSV:");
-        System.err.println("  java -cp out municipios.ui.Main <carpeta-con-municipios.csv-y-conexiones.csv>");
-        System.err.println("Para revisar los CSV: java -cp out municipios.datos.ValidadorDatos");
+        System.err.println("  java -cp target/classes municipios.ui.Main <carpeta-con-municipios.csv-y-conexiones.csv>");
+        System.err.println("Para revisar los CSV: java -cp target/classes municipios.datos.ValidadorDatos");
         System.exit(1);
     }
 }

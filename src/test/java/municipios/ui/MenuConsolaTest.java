@@ -130,12 +130,12 @@ class MenuConsolaTest {
     }
 
     @Test
-    @DisplayName("El menú aclara que A* no está disponible cuando no se le entrega")
-    void avaraSinAEstrella() {
-        String salida = correr(avara, null, "1", "2", "1", "2", "0");
-
-        assertTrue(salida.contains("A* todavía no está integrado"), salida);
-        assertTrue(salida.contains("(aún no disponible)"), salida);
+    @DisplayName("El menú no acepta construirse sin A*, porque los dos algoritmos son obligatorios")
+    void sinAEstrellaNoSePuedeConstruir() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> new MenuConsola(grafo, avara, null,
+                        new BufferedReader(new java.io.StringReader("")), System.out));
+        assertTrue(e.getMessage().contains("A*"), e.getMessage());
     }
 
     // ------------------------------------------------------------------ entrada de municipios

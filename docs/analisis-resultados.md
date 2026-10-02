@@ -78,15 +78,20 @@ La búsqueda avara es la que menos expande en términos absolutos (3.9 municipio
 
 ## 5. Tiempo de ejecución
 
-Tiempo medio de una búsqueda, con 200 repeticiones por par para que la medida sea estable:
+Tiempo medio de una búsqueda, con 200 repeticiones por par para que la medida sea estable. **Estas tres cifras cambian en cada máquina**: sirven para comparar el orden de magnitud, no para afirmar cuál es "más rápido".
 
 | Algoritmo | Microsegundos por búsqueda |
 |---|---:|
 | Búsqueda avara | 3.5 |
 | A* | 3.1 |
 | Dijkstra | 6.0 |
+| Búsqueda avara | 22.2 |
+| A* | 20.0 |
+| Dijkstra | 36.5 |
 
 Con 20 municipios y 25 conexiones, los tres algoritmos corren en microsegundos. La diferencia de tiempo no es un motivo para escoger uno: lo que decide es la calidad de la ruta.
+
+> Las cifras de tiempo de esta tabla y del CSV dependen de la máquina donde se midieron, así que cambian cada vez que se regeneran. Los costos, los caminos, los nodos expandidos y los porcentajes de desvío no dependen de la máquina: son siempre los mismos.
 
 ## 6. Conclusiones
 

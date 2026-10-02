@@ -33,4 +33,4 @@ A* coincidió con Dijkstra en 380 de los 380 pares que se pueden formar con los 
 | Barranquilla | Pasto | 1710.0 | 7 | 1710.0 | 13 | 1710.0 | 19 | 0 % | 6 |
 
 `A* ahorra nodos` es la diferencia entre los municipios expandidos por Dijkstra y los expandidos por A*.
-Los caminos completos, con los tiempos, están en `resultados-experimentos.csv`.
+Los caminos completos están en `resultados-experimentos.csv`, que además trae los tiempos; esas columnas cambian según la máquina donde se mida.
