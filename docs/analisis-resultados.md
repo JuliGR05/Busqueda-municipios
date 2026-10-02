@@ -82,6 +82,9 @@ Tiempo medio de una búsqueda, con 200 repeticiones por par para que la medida s
 
 | Algoritmo | Microsegundos por búsqueda |
 |---|---:|
+| Búsqueda avara | 3.5 |
+| A* | 3.1 |
+| Dijkstra | 6.0 |
 | Búsqueda avara | 22.2 |
 | A* | 20.0 |
 | Dijkstra | 36.5 |
