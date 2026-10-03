@@ -1,19 +1,19 @@
 origen,destino,costo_avara_km,nodos_avara,tiempo_avara_us,camino_avara,costo_astar_km,nodos_astar,tiempo_astar_us,camino_astar,costo_optimo_km,nodos_dijkstra,tiempo_dijkstra_us,avara_se_aleja_porcentaje,astar_ahorra_nodos
-"Ibagué","Cali",661.0,3,12.1,"Ibagué -> Neiva -> Popayán -> Cali",252.1,2,9.5,"Ibagué -> Armenia -> Cali",252.1,6,37.9,162.2,4
-"Armenia","Neiva",629.0,3,7.1,"Armenia -> Cali -> Popayán -> Neiva",284.1,3,9.5,"Armenia -> Ibagué -> Neiva",284.1,7,16.0,121.4,4
-"Pereira","Neiva",659.0,3,6.8,"Pereira -> Cali -> Popayán -> Neiva",329.6,4,4.4,"Pereira -> Armenia -> Ibagué -> Neiva",329.6,7,9.5,99.9,3
-"Soacha","Cali",739.0,3,3.6,"Soacha -> Neiva -> Popayán -> Cali",429.1,3,5.3,"Soacha -> Ibagué -> Armenia -> Cali",429.1,9,11.2,72.2,6
-"Tunja","Cali",902.0,4,6.6,"Tunja -> Soacha -> Neiva -> Popayán -> Cali",592.1,4,8.9,"Tunja -> Soacha -> Ibagué -> Armenia -> Cali",592.1,11,12.0,52.3,7
-"Medellín","Neiva",897.0,4,4.7,"Medellín -> Pereira -> Cali -> Popayán -> Neiva",567.6,5,5.6,"Medellín -> Pereira -> Armenia -> Ibagué -> Neiva",567.6,11,9.2,58.0,6
-"Barrancabermeja","Soacha",429.0,1,1.5,"Barrancabermeja -> Soacha",429.0,2,2.5,"Barrancabermeja -> Soacha",429.0,5,6.1,0.0,3
-"Santa Marta","Manizales",1492.0,6,5.0,"Santa Marta -> Valledupar -> Bucaramanga -> Tunja -> Soacha -> Ibagué -> Manizales",1161.0,8,6.0,"Santa Marta -> Barranquilla -> Cartagena -> Medellín -> Manizales",1161.0,11,7.2,28.5,3
-"Montería","Neiva",1347.0,5,4.7,"Montería -> Medellín -> Pereira -> Cali -> Popayán -> Neiva",1017.6,6,5.4,"Montería -> Medellín -> Pereira -> Armenia -> Ibagué -> Neiva",1017.6,15,12.8,32.4,9
-"Cartagena","Cúcuta",1314.0,5,8.0,"Cartagena -> Medellín -> Barrancabermeja -> Bucaramanga -> Cúcuta",1039.0,5,20.3,"Cartagena -> Barranquilla -> Santa Marta -> Valledupar -> Cúcuta",1039.0,11,15.1,26.5,6
-"Ibagué","Valledupar",1582.0,6,8.9,"Ibagué -> Manizales -> Medellín -> Cartagena -> Barranquilla -> Santa Marta -> Valledupar",1071.0,10,7.1,"Ibagué -> Soacha -> Tunja -> Bucaramanga -> Valledupar",1071.0,17,7.7,47.7,7
-"Bucaramanga","Popayán",1004.0,4,3.3,"Bucaramanga -> Tunja -> Soacha -> Neiva -> Popayán",1004.0,13,6.5,"Bucaramanga -> Tunja -> Soacha -> Neiva -> Popayán",1004.0,18,8.3,0.0,5
-"Villavicencio","Cúcuta",856.0,4,3.2,"Villavicencio -> Soacha -> Barrancabermeja -> Bucaramanga -> Cúcuta",758.0,5,3.0,"Villavicencio -> Soacha -> Tunja -> Bucaramanga -> Cúcuta",758.0,13,6.6,12.9,8
-"Pasto","Popayán",249.0,1,1.2,"Pasto -> Popayán",249.0,1,0.8,"Pasto -> Popayán",249.0,1,2.4,0.0,0
-"Pereira","Armenia",45.5,1,1.9,"Pereira -> Armenia",45.5,1,2.0,"Pereira -> Armenia",45.5,1,4.3,0.0,0
-"Santa Marta","Barranquilla",106.0,1,2.1,"Santa Marta -> Barranquilla",106.0,1,1.3,"Santa Marta -> Barranquilla",106.0,1,2.0,0.0,0
-"Cali","Popayán",180.0,1,2.1,"Cali -> Popayán",180.0,1,1.7,"Cali -> Popayán",180.0,2,3.9,0.0,1
-"Barranquilla","Pasto",1710.0,6,5.5,"Barranquilla -> Cartagena -> Medellín -> Pereira -> Cali -> Popayán -> Pasto",1710.0,15,8.5,"Barranquilla -> Cartagena -> Medellín -> Pereira -> Cali -> Popayán -> Pasto",1710.0,19,10.6,0.0,4
+"Ibagué","Cali",661.0,3,30.8,"Ibagué -> Neiva -> Popayán -> Cali",252.1,2,11.0,"Ibagué -> Armenia -> Cali",252.1,6,39.9,162.2,4
+"Armenia","Neiva",629.0,3,8.7,"Armenia -> Cali -> Popayán -> Neiva",284.1,3,6.8,"Armenia -> Ibagué -> Neiva",284.1,7,15.0,121.4,4
+"Pereira","Neiva",659.0,3,6.2,"Pereira -> Cali -> Popayán -> Neiva",323.0,4,6.7,"Pereira -> Ibagué -> Neiva",323.0,7,10.5,104.0,3
+"Soacha","Cali",739.0,3,4.9,"Soacha -> Neiva -> Popayán -> Cali",429.1,3,5.6,"Soacha -> Ibagué -> Armenia -> Cali",429.1,9,13.0,72.2,6
+"Tunja","Cali",902.0,4,7.1,"Tunja -> Soacha -> Neiva -> Popayán -> Cali",592.1,5,8.9,"Tunja -> Soacha -> Ibagué -> Armenia -> Cali",592.1,11,16.7,52.3,6
+"Medellín","Neiva",897.0,4,6.6,"Medellín -> Pereira -> Cali -> Popayán -> Neiva",561.0,5,7.4,"Medellín -> Pereira -> Ibagué -> Neiva",561.0,11,20.1,59.9,6
+"Barrancabermeja","Soacha",429.0,1,1.5,"Barrancabermeja -> Soacha",429.0,2,2.7,"Barrancabermeja -> Soacha",429.0,5,7.7,0.0,3
+"Santa Marta","Manizales",1326.0,5,6.8,"Santa Marta -> Bucaramanga -> Tunja -> Soacha -> Ibagué -> Manizales",1137.0,10,18.0,"Santa Marta -> Barranquilla -> Montería -> Medellín -> Manizales",1137.0,12,13.8,16.6,2
+"Montería","Neiva",1347.0,5,5.2,"Montería -> Medellín -> Pereira -> Cali -> Popayán -> Neiva",1011.0,6,6.2,"Montería -> Medellín -> Pereira -> Ibagué -> Neiva",1011.0,15,15.2,33.2,9
+"Cartagena","Cúcuta",902.0,2,4.6,"Cartagena -> Valledupar -> Cúcuta",873.0,5,9.7,"Cartagena -> Barranquilla -> Santa Marta -> Cúcuta",873.0,7,10.7,3.3,2
+"Ibagué","Valledupar",1444.0,4,7.8,"Ibagué -> Manizales -> Medellín -> Cartagena -> Valledupar",1071.0,10,14.8,"Ibagué -> Soacha -> Tunja -> Bucaramanga -> Valledupar",1071.0,17,24.1,34.8,7
+"Bucaramanga","Popayán",1004.0,4,5.3,"Bucaramanga -> Tunja -> Soacha -> Neiva -> Popayán",1004.0,13,9.5,"Bucaramanga -> Tunja -> Soacha -> Neiva -> Popayán",1004.0,18,11.7,0.0,5
+"Villavicencio","Cúcuta",740.0,3,2.4,"Villavicencio -> Tunja -> Bucaramanga -> Cúcuta",740.0,5,3.4,"Villavicencio -> Tunja -> Bucaramanga -> Cúcuta",740.0,13,8.6,0.0,8
+"Pasto","Popayán",249.0,1,0.9,"Pasto -> Popayán",249.0,1,0.6,"Pasto -> Popayán",249.0,1,1.7,0.0,0
+"Pereira","Armenia",45.5,1,1.8,"Pereira -> Armenia",45.5,1,2.0,"Pereira -> Armenia",45.5,1,4.6,0.0,0
+"Santa Marta","Barranquilla",106.0,1,1.5,"Santa Marta -> Barranquilla",106.0,1,1.2,"Santa Marta -> Barranquilla",106.0,1,2.1,0.0,0
+"Cali","Popayán",180.0,1,1.4,"Cali -> Popayán",180.0,1,1.1,"Cali -> Popayán",180.0,2,2.5,0.0,1
+"Barranquilla","Pasto",1686.0,6,5.3,"Barranquilla -> Montería -> Medellín -> Pereira -> Cali -> Popayán -> Pasto",1686.0,18,15.9,"Barranquilla -> Montería -> Medellín -> Pereira -> Cali -> Popayán -> Pasto",1686.0,19,19.3,0.0,1
