@@ -325,7 +325,7 @@ gráficamente las rutas encontradas por los algoritmos de búsqueda voraz y A*.
 
 El mapa se encuentra en:
 
-`docs/mapa-rutas.html`
+`docs/mapa.html`
 
 ### Tecnologías utilizadas
 
@@ -365,4 +365,4 @@ distancia Haversine estimada hasta el destino.
 
 Para visualizar el mapa, abrir el siguiente archivo:
 
-[Mapa interactivo de rutas](./docs/mapa-rutas.html)
+[Mapa interactivo de rutas](./docs/mapa.html)
