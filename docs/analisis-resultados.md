@@ -9,30 +9,28 @@ java -cp target/classes municipios.analisis.Experimentos
 
 ## 1. Con qué frecuencia falla la búsqueda avara
 
-Antes de la tabla conviene el dato completo. De los 380 pares ordenados que se pueden formar con los 20 municipios del proyecto, la búsqueda avara devuelve un camino que **no** es el más corto en **111 de ellos (29 %).
+Antes de la tabla conviene el dato completo. De los 380 pares ordenados que se pueden formar con los 20 municipios del proyecto, la búsqueda avara devuelve un camino que **no** es el más corto en **114 de ellos (30 %).
 
-Entre los que fallan, el sobrecosto medio es de 19.0 % y el peor caso es de 162.2 %.
+Entre los que fallan, el sobrecosto medio es de 19.8 % y el peor caso es de 162.2 %.
 
 ## 2. Los pares de la tabla
 
-La búsqueda avara se equivoca en 12 de los 18 pares de la tabla.
+La búsqueda avara se equivoca en 10 de los 18 pares de la tabla.
 
 | Origen | Destino | Avara (km) | Óptimo (km) | Se aleja |
 |---|---|---:|---:|---:|
 | Ibagué | Cali | 661.0 | 252.1 | +162.2 % |
 | Armenia | Neiva | 629.0 | 284.1 | +121.4 % |
-| Pereira | Neiva | 659.0 | 329.6 | +99.9 % |
-| Soacha | Cali | 838.0 | 429.1 | +95.3 % |
-| Tunja | Cali | 1001.0 | 592.1 | +69.1 % |
-| Medellín | Neiva | 897.0 | 567.6 | +58.0 % |
-| Barrancabermeja | Soacha | 860.0 | 559.0 | +53.8 % |
-| Santa Marta | Manizales | 1781.0 | 1161.0 | +53.4 % |
-| Montería | Neiva | 1347.0 | 1017.6 | +32.4 % |
-| Cartagena | Cúcuta | 1314.0 | 1039.0 | +26.5 % |
-| Ibagué | Valledupar | 1582.0 | 1360.0 | +16.3 % |
-| Bucaramanga | Popayán | 1103.0 | 1042.0 | +5.9 % |
+| Pereira | Neiva | 659.0 | 323.0 | +104.0 % |
+| Soacha | Cali | 739.0 | 429.1 | +72.2 % |
+| Tunja | Cali | 902.0 | 592.1 | +52.3 % |
+| Medellín | Neiva | 897.0 | 561.0 | +59.9 % |
+| Santa Marta | Manizales | 1305.0 | 1137.0 | +14.8 % |
+| Montería | Neiva | 1347.0 | 1011.0 | +33.2 % |
+| Cartagena | Cúcuta | 902.0 | 873.0 | +3.3 % |
+| Ibagué | Valledupar | 1444.0 | 1050.0 | +37.5 % |
 
-Sumando solo esos 12 pares, la búsqueda avara recorrió 12672 km donde bastaban 8633 km: un 46.8 % de kilómetros de más.
+Sumando solo esos 10 pares, la búsqueda avara recorrió 9485 km donde bastaban 6512 km: un 45.6 % de kilómetros de más.
 
 ### El caso más claro: Ibagué -> Cali
 
@@ -52,7 +50,7 @@ Sumando solo esos 12 pares, la búsqueda avara recorrió 12672 km donde bastaban
 
 **Por qué se equivoca.** En cada paso la búsqueda avara saca de la frontera el municipio con menor `h(n)`, la distancia en línea recta al destino, y no mira lo que ya se recorrió. En esta ruta `h` baja casi en cada paso: el algoritmo pasa de Ibagué a Neiva y de ahí a Popayán, y desde cada uno sigue apareciendo un municipio más "cerca" del destino en el mapa. El problema es que `h` mide distancia en línea recta y no kilómetros de carretera: cuando la conexión pasa por montaña o por un tramo lento, la distancia real es mucho mayor que la geodésica, y la búsqueda avara no tiene forma de corregirlo. A* descarta esa rama en cuanto ve que `g(n) + h(n)` ya supera el mejor costo conocido, y por eso sí encuentra la ruta corta.
 
-En los 6 pares restantes (Villavicencio -> Cúcuta, Pasto -> Popayán, Pereira -> Armenia, Santa Marta -> Barranquilla, Cali -> Popayán …) la búsqueda avara sí encontró el camino más corto. Es decir: **no falla siempre**, pero tampoco se puede confiar en ella.
+En los 8 pares restantes (Barrancabermeja -> Soacha, Bucaramanga -> Popayán, Villavicencio -> Cúcuta, Pasto -> Popayán, Pereira -> Armenia …) la búsqueda avara sí encontró el camino más corto. Es decir: **no falla siempre**, pero tampoco se puede confiar en ella.
 
 ## 3. A* siempre iguala a Dijkstra
 
@@ -66,15 +64,15 @@ Ese resultado no es casualidad y por eso se comprobó: la distancia en línea re
 
 | Algoritmo | Municipios expandidos en los 18 pares |
 |---|---:|
-| Búsqueda avara | 70 |
-| A* | 91 |
-| Dijkstra | 161 |
+| Búsqueda avara | 51 |
+| A* | 95 |
+| Dijkstra | 164 |
 
-A* exploró un 57 % de lo que exploró Dijkstra: 70 municipios menos.
+A* exploró un 58 % de lo que exploró Dijkstra: 69 municipios menos.
 
 En los 3 pares donde empatan (Pasto -> Popayán, Pereira -> Armenia, Santa Marta -> Barranquilla) el camino óptimo es tan directo que no hay nada que descartar: los tres algoritmos llegan por la misma ruta.
 
-La búsqueda avara es la que menos expande en términos absolutos (3.9 municipios de media frente a los 5.1 de A*), pero ese ahorro tiene un precio: son justamente los pares donde expande poco donde se equivoca. Medellín → Neiva la resuelve expandiendo 4 municipios y aun así devuelve una ruta de 897 km en vez de las 568 km óptimas.
+La búsqueda avara es la que menos expande en términos absolutos (2.8 municipios de media frente a los 5.3 de A*), pero ese ahorro tiene un precio: son justamente los pares donde expande poco donde se equivoca. Medellín → Neiva la resuelve expandiendo 4 municipios y aun así devuelve una ruta de 897 km en vez de las 568 km óptimas.
 
 ## 5. Tiempo de ejecución
 
@@ -82,17 +80,17 @@ Tiempo medio de una búsqueda, con 200 repeticiones por par para que la medida s
 
 | Algoritmo | Microsegundos por búsqueda |
 |---|---:|
-| Búsqueda avara | 5.1 |
-| A* | 4.8 |
-| Dijkstra | 8.2 |
+| Búsqueda avara | 3.1 |
+| A* | 2.9 |
+| Dijkstra | 4.9 |
 
-Con 20 municipios y 25 conexiones, los tres algoritmos corren en microsegundos. La diferencia de tiempo no es un motivo para escoger uno: lo que decide es la calidad de la ruta.
+Con 20 municipios y 42 conexiones, los tres algoritmos corren en microsegundos. La diferencia de tiempo no es un motivo para escoger uno: lo que decide es la calidad de la ruta.
 
 > Las cifras de tiempo de esta tabla y del CSV dependen de la máquina donde se midieron, así que cambian cada vez que se regeneran. Los costos, los caminos, los nodos expandidos y los porcentajes de desvío no dependen de la máquina: son siempre los mismos.
 
 ## 6. Conclusiones
 
-1. **La búsqueda avara es rápida pero no confiable.** Expande poco, pero en 29 % de los pares devuelve una ruta que no es la más corta, con sobrecostos de hasta 162 %. Si la calidad de la ruta no importa, sirve; si importa, no.
+1. **La búsqueda avara es rápida pero no confiable.** Expande poco, pero en 30 % de los pares devuelve una ruta que no es la más corta, con sobrecostos de hasta 162 %. Si la calidad de la ruta no importa, sirve; si importa, no.
 2. **A* es la opción correcta para este problema.** Siempre coincidió con el óptimo (380 de 380 pares) y exploró menos municipios que Dijkstra.
 3. **Lo decisivo es la heurística, no el algoritmo.** La distancia en línea recta resulta admisible y consistente en estos datos, y eso es justo lo que hace óptimo a A*. Con una heurística más informativa, por ejemplo las distancias reales por carretera entre todos los pares, A* exploraría todavía menos.
 4. **Dijkstra no hace falta para resolver el problema, pero sí como referencia.** Sin él no habría forma de saber si A* estaba encontrando el óptimo ni de medir cuánto se aleja la búsqueda avara.
