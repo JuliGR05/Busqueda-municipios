@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Rutas entre municipios: Búsqueda avara vs A*</title>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+<style>
+:root{
+  --ink:#1d2733;
+  --muted:#5d6b7a;
+  --line:#d5dce3;
+  --bg:#f6f8fa;
+  --avara:#d1495b;
+  --astar:#00798c;
+  --edge:#9aa5b1;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+}
+
+body{
+  display:flex;
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
+
+aside{
+  width:430px;
+  flex:none;
+  padding:20px;
+  overflow-y:auto;
+  border-right:1px solid var(--line);
+  background:#fff;
+}
+
+#map{
+  flex:1;
+  min-height:100%;
+}
+
+h1{
+  font-size:1.15rem;
+  line-height:1.3;
+  margin:0 0 4px;
+}
+
+h2{
+  font-size:1rem;
+  margin:20px 0 8px;
+}
+
+.sub{
+  margin:0 0 18px;
+  color:var(--muted);
+  font-size:.9rem;
+}
+
+label{
+  display:block;
+  font-size:.85rem;
+  font-weight:600;
+  margin:12px 0 4px;
+}
+
+select,
+button{
+  font:inherit;
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:#fff;
+  color:var(--ink);
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+}
+
+.row>div{
+  flex:1;
+}
+
+#swap{
+  width:44px;
+  flex:none;
+  cursor:pointer;
+}
+
+#go{
+  margin-top:16px;
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+  cursor:pointer;
+  font-weight:600;
+}
+
+#go:hover{
+  background:#2d3b4a;
+}
+
+.res{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+
+.alg{
+  margin-bottom:18px;
+}
+
+.alg h3{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:.95rem;
+  margin:0 0 5px;
+}
+
+.sw{
+  width:22px;
+  height:0;
+  border-top:4px solid;
+}
+
+.sw.a{
+  border-color:var(--avara);
+  border-top-style:dashed;
+}
+
+.sw.s{
+  border-color:var(--astar);
+}
+
+.stats{
+  font-size:.88rem;
+  color:var(--muted);
+}
+
+.stats b{
+  color:var(--ink);
+}
+
+.path{
+  margin:6px 0 0;
+  font-size:.88rem;
+  line-height:1.5;
+}
+
+#veredicto{
+  padding:10px 12px;
+  border-left:4px solid var(--astar);
+  background:var(--bg);
+  font-size:.92rem;
+  line-height:1.4;
+  margin-bottom:20px;
+}
+
+.trace{
+  border-top:1px solid var(--line);
+  padding-top:12px;
+}
+
+.trace table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.78rem;
+}
+
+.trace th,
+.trace td{
+  padding:5px 4px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+}
+
+.trace th{
+  font-weight:600;
+  background:#f6f8fa;
+}
+
+.trace-note{
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.4;
+  margin-top:8px;
+}
+
+.formula{
+  padding:10px;
+  margin:8px 0;
+  background:#f6f8fa;
+  border-radius:6px;
+  font-size:.82rem;
+  line-height:1.5;
+}
+
+.nota{
+  margin-top:18px;
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+.leaflet-tooltip.nm{
+  font-size:12px;
+  font-weight:600;
+  padding:1px 6px;
+}
+
+@media(max-width:900px){
+
+  body{
+    flex-direction:column-reverse;
+    height:auto;
+  }
+
+  aside{
+    width:100%;
+    border-right:0;
+    border-top:1px solid var(--line);
+  }
+
+  #map{
+    height:58vh;
+    min-height:58vh;
+    flex:none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<aside>
+
+  <h1>Búsqueda avara frente a A*</h1>
+
+  <p class="sub">
+    Selecciona dos municipios para comparar cómo trabajan ambos algoritmos.
+  </p>
+
+  <div class="row">
+
+    <div>
+      <label for="org">Origen</label>
+      <select id="org"></select>
+    </div>
+
+    <button
+      id="swap"
+      type="button"
+      title="Intercambiar origen y destino"
+      aria-label="Intercambiar origen y destino">
+      ⇄
+    </button>
+
+    <div>
+      <label for="dst">Destino</label>
+      <select id="dst"></select>
+    </div>
+
+  </div>
+
+  <button id="go" type="button">
+    Comparar rutas
+  </button>
+
+
+  <!-- RESULTADOS -->
+
+  <div class="res" id="res" hidden>
+
+    <div class="alg">
+
+      <h3>
+        <span class="sw a"></span>
+        Búsqueda avara
+      </h3>
+
+      <div class="formula">
+        <b>Criterio:</b><br>
+        h(n) = distancia Haversine desde el municipio
+        actual hasta el destino.
+      </div>
+
+      <div class="stats" id="sa"></div>
+
+      <p class="path" id="pa"></p>
+
+    </div>
+
+
+    <div class="alg">
+
+      <h3>
+        <span class="sw s"></span>
+        A*
+      </h3>
+
+      <div class="formula">
+        <b>Criterio:</b><br>
+        f(n) = g(n) + h(n)<br>
+        donde g(n) es el costo acumulado y h(n)
+        es la distancia Haversine al destino.
+      </div>
+
+      <div class="stats" id="ss"></div>
+
+      <p class="path" id="ps"></p>
+
+    </div>
+
+
+    <div id="veredicto"></div>
+
+
+    <!-- TRAZA VORAZ -->
+
+    <div class="trace">
+
+      <h2>Cómo decidió la búsqueda avara</h2>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Municipio</th>
+            <th>h(n)</th>
+            <th>Padre</th>
+          </tr>
+        </thead>
+
+        <tbody id="traceAvara"></tbody>
+
+      </table>
+
+      <p class="trace-note">
+        La búsqueda avara siempre prioriza el municipio con
+        menor h(n), sin considerar cuánto costó llegar hasta él.
+      </p>
+
+    </div>
+
+
+    <!-- TRAZA A* -->
+
+    <div class="trace">
+
+      <h2>Cómo decidió A*</h2>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Municipio</th>
+            <th>g(n)</th>
+            <th>h(n)</th>
+            <th>f(n)</th>
+            <th>Padre</th>
+          </tr>
+        </thead>
+
+        <tbody id="traceAStar"></tbody>
+
+      </table>
+
+      <p class="trace-note">
+        A* considera tanto el costo acumulado g(n) como
+        la estimación restante h(n).
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <p class="nota">
+    Los kilómetros de las conexiones corresponden al archivo
+    conexiones.csv. La heurística se calcula mediante la distancia
+    Haversine entre las coordenadas de los municipios.
+  </p>
+
+</aside>
+
+
+<div id="map"></div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+
+// MUNICIPIOS
+
+
+const M = {
+
+  "Barranquilla":[10.9685,-74.7813],
+  "Cartagena":[10.3982,-75.4933],
+  "Santa Marta":[11.2472,-74.2017],
+  "Valledupar":[10.4654,-73.2531],
+  "Montería":[8.7508,-75.8782],
+
+  "Medellín":[6.2448,-75.5748],
+  "Manizales":[5.0668,-75.5068],
+  "Pereira":[4.8143,-75.6949],
+  "Armenia":[4.5333,-75.6833],
+  "Cali":[3.4305,-76.5199],
+
+  "Soacha":[4.5794,-74.2168],
+  "Tunja":[5.5448,-73.3576],
+  "Bucaramanga":[7.1275,-73.1191],
+  "Cúcuta":[7.9075,-72.5049],
+  "Barrancabermeja":[7.0675,-73.8472],
+
+  "Villavicencio":[4.1425,-73.6294],
+  "Ibagué":[4.4378,-75.2006],
+  "Neiva":[2.9300,-75.2797],
+  "Popayán":[2.4382,-76.6132],
+  "Pasto":[1.2146,-77.2781]
+};
+
+
+/* CONEXIONES
+   EXACTAMENTE LAS DEL CSV ENVIADO */
+
+const EDGES = [
+
+  ["Santa Marta","Barranquilla",106.0],
+  ["Santa Marta","Valledupar",260.0],
+  ["Armenia","Pereira",45.5],
+  ["Armenia","Cali",179.0],
+  ["Armenia","Ibagué",73.1],
+
+  ["Bucaramanga","Barrancabermeja",114.0],
+  ["Bucaramanga","Tunja",282.0],
+  ["Bucaramanga","Cúcuta",199.0],
+  ["Villavicencio","Soacha",114.0],
+  ["Pasto","Popayán",249.0],
+
+  ["Medellín","Manizales",221.0],
+  ["Medellín","Pereira",238.0],
+  ["Pereira","Manizales",51.0],
+  ["Pereira","Cali",209.0],
+  ["Cali","Popayán",180.0],
+
+  ["Ibagué","Neiva",211.0],
+  ["Ibagué","Soacha",177.0],
+  ["Barrancabermeja","Medellín",301.0],
+  ["Barranquilla","Cartagena",134.0],
+  ["Valledupar","Cúcuta",539.0],
+
+  ["Montería","Cartagena",250.0],
+  ["Montería","Medellín",450.0],
+  ["Manizales","Ibagué",161.0],
+  ["Soacha","Tunja",163.0],
+  ["Neiva","Popayán",270.0],
+
+  ["Medellín","Soacha",442.0],
+  ["Neiva","Soacha",289.0],
+  ["Barrancabermeja","Soacha",429.0],
+  ["Valledupar","Bucaramanga",449.0],
+  ["Montería","Barranquilla",360.0],
+
+  ["Villavicencio","Tunja",259.0],
+  ["Cúcuta","Medellín",579.0],
+  ["Cartagena","Medellín",699.0],
+  ["Pereira","Ibagué",112.0],
+  ["Barranquilla","Valledupar",306.0],
+
+  ["Valledupar","Montería",517.0],
+  ["Santa Marta","Bucaramanga",543.0],
+  ["Cartagena","Valledupar",363.0],
+  ["Santa Marta","Cúcuta",633.0],
+
+  ["Bucaramanga","Soacha",424.0],
+  ["Tunja","Cúcuta",429.0],
+  ["Valledupar","Barrancabermeja",469.0]
+
+];
+
+
+// GRAFO
+
+const adj = {};
+
+Object.keys(M).forEach(n => {
+  adj[n] = [];
+});
+
+
+/*
+   Las conexiones son BIDIRECCIONALES.
+*/
+
+EDGES.forEach(([a,b,k]) => {
+
+  adj[a].push([b,k]);
+  adj[b].push([a,k]);
+
+});
+
+
+/*HAVERSINE
+   h(n) */
+
+function hav(a,b){
+
+  const R = 6371;
+
+  const r = Math.PI / 180;
+
+  const [la1,lo1] = M[a];
+  const [la2,lo2] = M[b];
+
+  const d =
+    Math.sin((la2-la1)*r/2)**2 +
+    Math.cos(la1*r) *
+    Math.cos(la2*r) *
+    Math.sin((lo2-lo1)*r/2)**2;
+
+  return 2 * R * Math.asin(Math.sqrt(d));
+}
+
+
+// RECONSTRUIR CAMINO
+
+function armar(par,t,exp){
+
+  if(!(t in par)){
+    return null;
+  }
+
+  const path = [];
+
+  for(let u=t; u!==null; u=par[u]){
+    path.unshift(u);
+  }
+
+  let cost = 0;
+
+  for(let i=0; i<path.length-1; i++){
+
+    const edge =
+      adj[path[i]].find(e => e[0] === path[i+1]);
+
+    cost += edge[1];
+  }
+
+  return {
+    path,
+    cost,
+    exp
+  };
+}
+
+
+/*
+   BÚSQUEDA AVARA
+   Prioridad = h(n)*/
+
+function avara(s,t){
+
+  const par = {
+    [s]: null
+  };
+
+  const vis = new Set();
+
+  let fr = [
+    {
+      n:s,
+      h:hav(s,t),
+      q:0
+    }
+  ];
+
+  let q = 1;
+
+  let exp = 0;
+
+  const trace = [];
+
+
+  while(fr.length){
+
+    /*
+       Orden:
+
+       1. menor h(n)
+       2. en empate, orden de inserción
+    */
+
+    fr.sort(
+      (a,b) =>
+        a.h-b.h ||
+        a.q-b.q
+    );
+
+
+    const actual = fr.shift();
+
+    const n = actual.n;
+
+
+    if(vis.has(n)){
+      continue;
+    }
+
+
+    vis.add(n);
+
+    exp++;
+
+
+    trace.push({
+
+      n:n,
+
+      h:hav(n,t),
+
+      parent:par[n] ?? "-"
+
+    });
+
+
+    if(n===t){
+      break;
+    }
+
+
+    for(const [v] of adj[n]){
+
+      if(!vis.has(v)){
+
+        if(!(v in par)){
+
+          par[v] = n;
+
+        }
+
+        fr.push({
+
+          n:v,
+
+          h:hav(v,t),
+
+          q:q++
+
+        });
+
+      }
+
+    }
+
+  }
+
+
+  const result = armar(par,t,exp);
+
+  result.trace = trace;
+
+  return result;
+}
+
+
+// A* - Prioridad = f(n) = g(n) + h(n)
+
+function aestrella(s,t){
+
+  const best = {
+    [s]:0
+  };
+
+  const par = {
+    [s]:null
+  };
+
+  const cerr = new Set();
+
+
+  let fr = [
+
+    {
+      n:s,
+
+      f:hav(s,t),
+
+      q:0
+
+    }
+
+  ];
+
+
+  let q = 1;
+
+  let exp = 0;
+
+  const trace = [];
+
+
+  while(fr.length){
+
+    /*
+       Orden:
+
+       1. menor f(n)
+       2. en empate, orden de inserción
+    */
+
+    fr.sort(
+
+      (a,b) =>
+        a.f-b.f ||
+        a.q-b.q
+
+    );
+
+
+    const actual = fr.shift();
+
+    const n = actual.n;
+
+
+    if(cerr.has(n)){
+      continue;
+    }
+
+
+    cerr.add(n);
+
+    exp++;
+
+
+    const g = best[n];
+
+    const h = hav(n,t);
+
+    const f = g+h;
+
+
+    trace.push({
+
+      n:n,
+
+      g:g,
+
+      h:h,
+
+      f:f,
+
+      parent:par[n] ?? "-"
+
+    });
+
+
+    if(n===t){
+      break;
+    }
+
+
+    for(const [v,k] of adj[n]){
+
+      const nuevoG =
+        best[n] + k;
+
+
+      if(
+        !(v in best) ||
+        nuevoG < best[v]-1e-9
+      ){
+
+        best[v] = nuevoG;
+
+        par[v] = n;
+
+        cerr.delete(v);
+
+
+        fr.push({
+
+          n:v,
+
+          f:nuevoG + hav(v,t),
+
+          q:q++
+
+        });
+
+      }
+
+    }
+
+  }
+
+
+  const result =
+    armar(par,t,exp);
+
+
+  result.trace = trace;
+
+  return result;
+}
+
+
+//  MAPA
+
+const map =
+  L.map('map',{
+    zoomSnap:.25
+  })
+  .setView(
+    [5.6,-74.6],
+    6
+  );
+
+
+L.tileLayer(
+    'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
+    {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+    }
+).addTo(map);
+
+
+// DIBUJAR TODAS LAS CONEXIONES
+
+EDGES.forEach(([a,b,k]) => {
+
+  L.polyline(
+
+    [M[a],M[b]],
+
+    {
+      color:'#9aa5b1',
+      weight:1.5,
+      opacity:.8
+    }
+
+  )
+
+  .bindTooltip(
+
+    `${a} – ${b}: ${k} km`,
+
+    {
+      sticky:true
+    }
+
+  )
+
+  .addTo(map);
+
+});
+
+
+// MUNICIPIOS
+
+const marcadores = {};
+
+
+Object.keys(M).forEach(n => {
+
+  marcadores[n] =
+
+    L.circleMarker(
+
+      M[n],
+
+      {
+        radius:6,
+        color:'#1d2733',
+        weight:2,
+        fillColor:'#fff',
+        fillOpacity:1
+      }
+
+    )
+
+    .bindTooltip(
+
+      n,
+
+      {
+        direction:'right',
+        className:'nm'
+      }
+
+    )
+
+    .addTo(map);
+
+});
+
+
+let capa =
+  L.layerGroup().addTo(map);
+
+
+// SELECTORES
+
+const org =
+  document.getElementById('org');
+
+const dst =
+  document.getElementById('dst');
+
+
+Object.keys(M)
+
+  .sort(
+    (a,b) =>
+      a.localeCompare(b,'es')
+  )
+
+  .forEach(n => {
+
+    org.add(
+      new Option(n,n)
+    );
+
+    dst.add(
+      new Option(n,n)
+    );
+
+  });
+
+
+org.value = 'Montería';
+
+dst.value = 'Popayán';
+
+
+// FUNCIONES DE PRESENTACIÓn
+
+const km =
+  x =>
+    x.toFixed(1)
+     .replace('.',',')
+     + ' km';
+
+
+const flecha =
+  p =>
+    p.join(' → ');
+
+
+// MOSTRAR TRAZA VORAZ
+
+function mostrarTrazaAvara(trace){
+
+  const tbody =
+    document.getElementById(
+      'traceAvara'
+    );
+
+  tbody.innerHTML = '';
+
+
+  trace.forEach((x,i) => {
+
+    const tr =
+      document.createElement('tr');
+
+
+    tr.innerHTML = `
+
+      <td>${i+1}</td>
+
+      <td>${x.n}</td>
+
+      <td>${x.h.toFixed(1)} km</td>
+
+      <td>${x.parent}</td>
+
+    `;
+
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+
+// MOSTRAR TRAZA A*
+
+function mostrarTrazaAStar(trace){
+
+  const tbody =
+    document.getElementById(
+      'traceAStar'
+    );
+
+  tbody.innerHTML = '';
+
+
+  trace.forEach((x,i) => {
+
+    const tr =
+      document.createElement('tr');
+
+
+    tr.innerHTML = `
+
+      <td>${i+1}</td>
+
+      <td>${x.n}</td>
+
+      <td>${x.g.toFixed(1)}</td>
+
+      <td>${x.h.toFixed(1)}</td>
+
+      <td>${x.f.toFixed(1)}</td>
+
+      <td>${x.parent}</td>
+
+    `;
+
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+
+// COMPARACIÓN
+
+function comparar(){
+
+  const s =
+    org.value;
+
+  const t =
+    dst.value;
+
+
+  if(s===t){
+
+    return;
+  }
+
+
+  const a =
+    avara(s,t);
+
+  const b =
+    aestrella(s,t);
+
+
+  // LIMPIAR RUTAS ANTERIORES
+
+  capa.clearLayers();
+
+
+  Object.entries(marcadores)
+    .forEach(([n,m]) => {
+
+      m.setStyle({
+
+        fillColor:'#fff',
+
+        radius:6
+
+      });
+
+
+      m.unbindTooltip()
+
+       .bindTooltip(
+
+         n,
+
+         {
+           direction:'right',
+           className:'nm'
+         }
+
+       );
+
+    });
+
+
+  // DIBUJAR RUTA A*
+
+  L.polyline(
+
+    b.path.map(n => M[n]),
+
+    {
+      color:'#00798c',
+      weight:9,
+      opacity:.55
+    }
+
+  ).addTo(capa);
+
+
+  // DIBUJAR RUTA VORAZ
+
+  L.polyline(
+
+    a.path.map(n => M[n]),
+
+    {
+      color:'#d1495b',
+      weight:4,
+      dashArray:'9 8'
+    }
+
+  ).addTo(capa);
+
+
+  // MARCAR MUNICIPIOS DE LAS RUTAS
+
+  new Set([
+    ...a.path,
+    ...b.path
+  ])
+
+  .forEach(n => {
+
+    const rutaAstar =
+      b.path.includes(n);
+
+    const rutaAvara =
+      a.path.includes(n);
+
+
+    marcadores[n].setStyle({
+
+      fillColor:
+
+        rutaAstar && rutaAvara
+          ? '#1d2733'
+
+          : rutaAstar
+          ? '#00798c'
+
+          : '#d1495b',
+
+      radius:7
+
+    });
+
+
+    marcadores[n]
+      .bringToFront();
+
+
+    marcadores[n]
+      .unbindTooltip()
+      .bindTooltip(
+
+        n,
+
+        {
+          permanent:true,
+          direction:'right',
+          className:'nm'
+        }
+
+      );
+
+  });
+
+
+  // AJUSTAR MAPA
+
+  map.fitBounds(
+
+    L.latLngBounds(
+
+      [
+        ...new Set([
+          ...a.path,
+          ...b.path
+        ])
+      ]
+
+      .map(n => M[n])
+
+    ),
+
+    {
+      padding:[50,50]
+    }
+
+  );
+
+
+  // ESTADÍSTICAS
+
+  document.getElementById('sa').innerHTML = `
+
+    <b>${km(a.cost)}</b>
+
+    · ${a.exp} nodos expandidos
+
+    · ${a.path.length} municipios
+
+  `;
+
+
+  document.getElementById('ss').innerHTML = `
+
+    <b>${km(b.cost)}</b>
+
+    · ${b.exp} nodos expandidos
+
+    · ${b.path.length} municipios
+
+  `;
+
+
+  // CAMINOS
+
+  document.getElementById('pa')
+    .textContent =
+      flecha(a.path);
+
+
+  document.getElementById('ps')
+    .textContent =
+      flecha(b.path);
+
+
+  // VEREDICTO
+
+  const v =
+    document.getElementById(
+      'veredicto'
+    );
+
+
+  const d =
+    a.cost-b.cost;
+
+
+  if(Math.abs(d)<1e-6){
+
+    if(
+      flecha(a.path) ===
+      flecha(b.path)
+    ){
+
+      v.textContent =
+        'Los dos algoritmos encontraron el mismo camino y el mismo costo. Esto es válido: la búsqueda avara puede encontrar el camino óptimo en determinados pares.';
+
+    }else{
+
+      v.textContent =
+        'Los algoritmos encontraron caminos diferentes, pero ambos tienen el mismo costo total.';
+
+    }
+
+    v.style.borderColor =
+      '#9aa5b1';
+
+  }else{
+
+    v.textContent =
+
+      `La búsqueda avara obtuvo ${km(a.cost)}
+       y A* obtuvo ${km(b.cost)}.
+       A* encontró un camino ${km(Math.abs(d))}
+       ${d>0 ? 'más corto' : 'más largo'} que la búsqueda avara.`;
+
+    v.style.borderColor =
+      d>0
+        ? '#00798c'
+        : '#d1495b';
+
+  }
+
+
+  // TRAZAS
+
+  mostrarTrazaAvara(
+    a.trace
+  );
+
+  mostrarTrazaAStar(
+    b.trace
+  );
+
+
+  document.getElementById(
+    'res'
+  ).hidden = false;
+
+}
+
+
+//EVENTOS
+
+document
+  .getElementById('go')
+  .addEventListener(
+    'click',
+    comparar
+  );
+
+
+document
+  .getElementById('swap')
+  .addEventListener(
+    'click',
+    () => {
+
+      const x =
+        org.value;
+
+      org.value =
+        dst.value;
+
+      dst.value =
+        x;
+
+      comparar();
+
+    }
+  );
+
+
+org.addEventListener(
+  'change',
+  comparar
+);
+
+
+dst.addEventListener(
+  'change',
+  comparar
+);
+
+
+// EJECUCIÓN INICIAL
+
+comparar();
+
+</script>
+
+</body>
+</html>

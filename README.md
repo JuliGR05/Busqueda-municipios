@@ -317,3 +317,52 @@ revisión de otro integrante.
 - [x] Tabla comparativa y análisis de resultados
 - [x] Informe y diagrama de clases
 - [ ] Presentación
+
+## 15.Visualización de rutas
+
+El proyecto cuenta con un mapa interactivo desarrollado en HTML para visualizar
+gráficamente las rutas encontradas por los algoritmos de búsqueda voraz y A*.
+
+El mapa se encuentra en:
+
+`docs/mapa-rutas.html`
+
+### Tecnologías utilizadas
+
+- **HTML, CSS y JavaScript:** estructura, estilos e interacción de la página.
+- **Leaflet:** biblioteca utilizada para construir el mapa interactivo.
+- **OpenStreetMap:** fuente de los datos cartográficos utilizados como mapa base.
+- **Haversine:** cálculo de la distancia geográfica utilizada como heurística.
+- **Búsqueda voraz:** utiliza `h(n)` para seleccionar el siguiente municipio.
+- **A\*:** utiliza `f(n) = g(n) + h(n)`, considerando el costo acumulado y la heurística.
+
+### Funcionalidades
+
+El mapa permite:
+
+- Seleccionar un municipio de origen y uno de destino.
+- Comparar la ruta encontrada mediante búsqueda voraz y A*.
+- Visualizar las conexiones entre los municipios del grafo.
+- Mostrar las rutas encontradas directamente sobre el mapa.
+- Consultar el costo total de cada ruta en kilómetros.
+- Visualizar la cantidad de nodos expandidos por cada algoritmo.
+- Mostrar los municipios que forman parte de cada camino.
+- Consultar información del proceso de decisión de cada algoritmo, incluyendo
+  `h(n)`, `g(n)` y `f(n)` según corresponda.
+
+La búsqueda voraz selecciona los municipios utilizando únicamente la heurística:
+
+`h(n) = distancia Haversine desde el municipio actual hasta el destino`
+
+Mientras que A* utiliza:
+
+`f(n) = g(n) + h(n)`
+
+donde `g(n)` representa el costo acumulado del camino recorrido y `h(n)` la
+distancia Haversine estimada hasta el destino.
+
+### Acceso al mapa
+
+Para visualizar el mapa, abrir el siguiente archivo:
+
+[Mapa interactivo de rutas](./docs/mapa-rutas.html)
