@@ -23,6 +23,23 @@ class UnionFindTest {
     }
 
     @Test
+    void findTrasCompresionDevuelveSiempreLaRaiz() {
+        UnionFind uf = new UnionFind(6);
+        uf.union(0, 1);
+        uf.union(1, 2);
+        uf.union(2, 3);
+        uf.union(4, 5);
+        int raiz = uf.find(0);
+        // Tras la compresión de caminos, todos los find del grupo dan la misma raíz
+        assertEquals(raiz, uf.find(1));
+        assertEquals(raiz, uf.find(2));
+        assertEquals(raiz, uf.find(3));
+        // Repetir find sigue dando la misma raíz (la compresión es idempotente)
+        assertEquals(raiz, uf.find(0));
+        assertNotEquals(uf.find(4), raiz);
+    }
+
+    @Test
     void unirDeNuevoDevuelveFalse() {
         UnionFind uf = new UnionFind(3);
         assertTrue(uf.union(0, 1));
