@@ -1,7 +1,9 @@
 package municipios.ui;
 
 import municipios.algoritmo.ResultadoBusqueda;
+import municipios.algoritmo.ResultadoMST;
 import municipios.modelo.Grafo;
+import municipios.modelo.Grafo.Arista;
 import municipios.modelo.Municipio;
 
 import java.io.BufferedReader;
@@ -32,6 +34,15 @@ public class MenuConsola {
     /** Algoritmo que se puede elegir en el menú. */
     public record Algoritmo(String nombre, Buscador buscador) {}
 
+    /** Forma de calcular un árbol de expansión mínima a partir de un municipio inicial (puede ser null). */
+    @FunctionalInterface
+    public interface BuscadorMST {
+        ResultadoMST calcular(Grafo grafo, Municipio inicio);
+    }
+
+    /** Algoritmo de árbol de expansión mínima que se puede elegir en el menú (Kruskal, Prim...). */
+    public record AlgoritmoMST(String nombre, BuscadorMST buscador) {}
+
     /** Se lanza cuando la entrada se termina (Ctrl+D / Ctrl+Z) para cerrar el menú sin error. */
     private static class FinDeEntrada extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -47,6 +58,7 @@ public class MenuConsola {
     private final Grafo grafo;
     private final Algoritmo avara;
     private final Algoritmo aEstrella;
+    private final List<AlgoritmoMST> algoritmosMST;
     private final BufferedReader in;
     private final PrintStream out;
 
@@ -58,6 +70,20 @@ public class MenuConsola {
      * @param out       dónde se muestran los mensajes
      */
     public MenuConsola(Grafo grafo, Algoritmo avara, Algoritmo aEstrella, BufferedReader in, PrintStream out) {
+        this(grafo, avara, aEstrella, List.of(), in, out);
+    }
+
+    /**
+     * @param grafo         datos ya cargados (no null)
+     * @param avara         búsqueda avara (no null)
+     * @param aEstrella     A* (no null)
+     * @param algoritmosMST árboles de expansión mínima disponibles (Kruskal, Prim...); si está
+     *                      vacía o es null, el menú no muestra esa opción
+     * @param in            de dónde se lee lo que escribe el usuario
+     * @param out           dónde se muestran los mensajes
+     */
+    public MenuConsola(Grafo grafo, Algoritmo avara, Algoritmo aEstrella, List<AlgoritmoMST> algoritmosMST,
+                        BufferedReader in, PrintStream out) {
         if (grafo == null || avara == null || aEstrella == null || in == null || out == null) {
             throw new IllegalArgumentException(
                     "Grafo, búsqueda avara, A*, entrada y salida son obligatorios.");
@@ -66,6 +92,7 @@ public class MenuConsola {
         this.municipios = grafo.getMunicipios();
         this.avara = avara;
         this.aEstrella = aEstrella;
+        this.algoritmosMST = (algoritmosMST != null) ? List.copyOf(algoritmosMST) : List.of();
         this.in = in;
         this.out = out;
     }
@@ -82,19 +109,34 @@ public class MenuConsola {
                 out.println("\nMenú principal");
                 out.println("  1) Buscar una ruta");
                 out.println("  2) Ver la lista de municipios");
+                if (!algoritmosMST.isEmpty()) {
+                    out.println("  3) Árbol de expansión mínima (Kruskal, Prim o ambos)");
+                }
                 out.println("  0) Salir");
                 String opcion = leer("Opción: ");
                 switch (normalizar(opcion)) {
                     case "1" -> nuevaConsulta();
                     case "2" -> listarMunicipios();
+                    case "3" -> {
+                        if (algoritmosMST.isEmpty()) {
+                            out.println(mensajeOpcionInvalida(opcion));
+                        } else {
+                            nuevaConsultaMST();
+                        }
+                    }
                     case "0", "salir" -> seguir = false;
-                    default -> out.println("Opción no válida: '" + opcion + "'. Escribe 1, 2 o 0.");
+                    default -> out.println(mensajeOpcionInvalida(opcion));
                 }
             }
         } catch (FinDeEntrada e) {
             out.println();
         }
         out.println("¡Hasta luego!");
+    }
+
+    private String mensajeOpcionInvalida(String opcion) {
+        String validas = algoritmosMST.isEmpty() ? "1, 2 o 0" : "1, 2, 3 o 0";
+        return "Opción no válida: '" + opcion + "'. Escribe " + validas + ".";
     }
 
     // ------------------------------------------------------------------ consulta
@@ -200,7 +242,68 @@ public class MenuConsola {
         return null;
     }
 
-    // ------------------------------------------------------------------ resultados
+
+    private void nuevaConsultaMST() {
+        List<AlgoritmoMST> elegidos = elegirAlgoritmosMST();
+        if (elegidos == null) {
+            return;
+        }
+        for (AlgoritmoMST algoritmo : elegidos) {
+            ResultadoMST resultado;
+            try {
+                resultado = algoritmo.buscador().calcular(grafo, null);
+            } catch (RuntimeException e) {
+                out.println("\nNo se pudo ejecutar " + algoritmo.nombre() + ": " + e.getMessage());
+                continue;
+            }
+            mostrarMST(algoritmo.nombre(), resultado);
+        }
+    }
+
+    /** @return los algoritmos de MST a ejecutar, o null si el usuario decide volver al menú */
+    private List<AlgoritmoMST> elegirAlgoritmosMST() {
+        int todas = algoritmosMST.size() + 1;
+        out.println("\nÁrbol de expansión mínima:");
+        for (int i = 0; i < algoritmosMST.size(); i++) {
+            out.println("  " + (i + 1) + ") " + algoritmosMST.get(i).nombre());
+        }
+        out.println("  " + todas + ") Todos, para comparar");
+        while (true) {
+            String texto = leer("Elige una opción (1-" + todas + ", 0 para volver): ");
+            String normal = normalizar(texto);
+            if (normal.equals("0") || normal.equals("volver")) {
+                return null;
+            }
+            if (normal.equals("todos") || normal.equals(String.valueOf(todas))) {
+                return algoritmosMST;
+            }
+            if (texto.matches("[+-]?\\d+")) {
+                int numero = Integer.parseInt(texto);
+                if (numero >= 1 && numero <= algoritmosMST.size()) {
+                    return List.of(algoritmosMST.get(numero - 1));
+                }
+            }
+            out.println("Opción no válida: '" + texto + "'. Escribe un número entre 1 y " + todas
+                    + ", o 0 para volver.");
+        }
+    }
+
+    private void mostrarMST(String nombre, ResultadoMST r) {
+        out.println("\n--------------------------------------------------");
+        out.println("Árbol de expansión mínima (" + nombre + ")");
+        if (!r.isConexo()) {
+            out.println("  Aviso: el grafo no es conexo; el árbol solo cubre la componente alcanzada "
+                    + "desde el municipio inicial.");
+        }
+        out.println("  Aristas elegidas: " + r.getNumeroAristas());
+        out.println("  Costo total: " + km(r.getCostoTotal()));
+        out.println("  Aristas descartadas: " + r.getAristasDescartadas());
+        for (Arista a : r.getAristas()) {
+            out.println("    " + a.origen() + " - " + a.destino() + ": " + km(a.distancia()));
+        }
+    }
+
+    
 
     private void ejecutarYMostrar(Municipio origen, Municipio destino, List<Algoritmo> algoritmos) {
         List<ResultadoBusqueda> resultados = new ArrayList<>();
@@ -284,7 +387,7 @@ public class MenuConsola {
         return menos + " expandió " + Math.abs(na - nb) + " nodo(s) menos (" + na + " frente a " + nb + ").";
     }
 
-    // ------------------------------------------------------------------ utilidades
+    
 
     private void listarMunicipios() {
         out.println("\nMunicipios disponibles:");

@@ -4,15 +4,19 @@ import municipios.algoritmo.BusquedaAvara;
 import municipios.algoritmo.BusquedaEstrella;
 import municipios.algoritmo.DistanciaLineaRecta;
 import municipios.algoritmo.Heuristica;
+import municipios.algoritmo.Kruskal;
+import municipios.algoritmo.Prim;
 import municipios.datos.CargadorCSV;
 import municipios.modelo.Grafo;
 import municipios.ui.MenuConsola.Algoritmo;
+import municipios.ui.MenuConsola.AlgoritmoMST;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Punto de entrada del programa. Carga los CSV al iniciar y abre el menú por consola con las
@@ -41,8 +45,14 @@ public class Main {
         Algoritmo busquedaAEstrella =
                 new Algoritmo("A*", new BusquedaEstrella(grafo, heuristica)::buscar);
 
+        Kruskal kruskal = new Kruskal();
+        Prim prim = new Prim();
+        List<AlgoritmoMST> algoritmosMST = List.of(
+                new AlgoritmoMST("Kruskal", (g, inicio) -> kruskal.calcular(g)),
+                new AlgoritmoMST("Prim", prim::calcular));
+
         BufferedReader entrada = new BufferedReader(new InputStreamReader(System.in));
-        new MenuConsola(grafo, busquedaAvara, busquedaAEstrella, entrada, System.out).ejecutar();
+        new MenuConsola(grafo, busquedaAvara, busquedaAEstrella, algoritmosMST, entrada, System.out).ejecutar();
     }
 
     private static Grafo cargarDatos(Path carpeta) {
