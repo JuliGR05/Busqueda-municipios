@@ -2,8 +2,13 @@ package municipios.modelo;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import municipios.DatosReales;
 
 class GrafoTest {
 
@@ -74,5 +79,22 @@ class GrafoTest {
     void nombreEquivalenteSeRechaza() {
         assertThrows(IllegalArgumentException.class,
                 () -> grafo.agregarMunicipio(new Municipio("medellin", 6.0, -75.0)));
+    }
+
+    @Test
+    void getAristasDevuelveCadaConexionUnaSolaVez() {
+        grafo.agregarConexion(bogota, cali, 460);
+        List<Grafo.Arista> aristas = grafo.getAristas();
+        assertEquals(2, aristas.size()); // Medellín-Bogotá y Bogotá-Cali, no 4
+    }
+
+    @Test
+    void getAristasConDatosRealesDevuelve42SinDuplicados() {
+        List<Grafo.Arista> aristas = DatosReales.grafo().getAristas();
+        assertEquals(42, aristas.size());
+        Set<Set<Municipio>> pares = new HashSet<>();
+        for (Grafo.Arista a : aristas) {
+            assertTrue(pares.add(Set.of(a.origen(), a.destino())));
+        }
     }
 }

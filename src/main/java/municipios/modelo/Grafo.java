@@ -79,6 +79,27 @@ public class Grafo {
         return new ArrayList<>(adyacencias.keySet());
     }
 
+    /**Conexión entre dos municipios vista como arista (origen,destino,km) */
+    public record Arista(Municipio origen, Municipio destino, double distancia){}
+
+    /** Todas las conexiones del grafo, cada una, una sola vez. Internamente cada conexión
+     * se guarda en ambos sentidos; aquí solose devuelve una de las dos. 
+     */
+
+    public List<Arista> getAristas(){
+        List<Arista> aristas = new ArrayList<>();
+        Set<Municipio> procesados = new HashSet<>();
+        for (Map.Entry<Municipio, List<Conexion>> entrada : adyacencias.entrySet()){
+            Municipio origen = entrada.getKey();
+            for (Conexion c : entrada.getValue()){
+                if (!procesados.contains(c.destino())){
+                    aristas.add(new Arista(origen, c.destino(), c.distancia()));
+                }
+            }
+            procesados.add(origen);
+        }
+        return Collections.unmodifiableList(aristas);
+    }
     private static String normalizar(String s) {
         return Normalizer.normalize(s.trim(), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
