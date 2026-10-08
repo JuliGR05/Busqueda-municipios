@@ -400,7 +400,54 @@ municipios sería una equivocación: aquí el problema no es el tiempo, es la ca
 
 ---
 
-## 9. Limitaciones
+## 9. Árbol de expansión mínima (MST)
+
+Además de las rutas más cortas entre dos municipios, el proyecto calcula el **árbol de expansión
+mínima** (MST, por sus siglas en inglés) del grafo: el conjunto de conexiones de menor costo total
+que conectan los 20 municipios sin formar ciclos. Para 20 nodos son exactamente 19 aristas.
+
+### 9.1 Cómo funcionan Kruskal y Prim
+
+- **Kruskal** ordena todas las aristas de menor a mayor y las va aceptando mientras no formen un
+  ciclo, usando una estructura de conjuntos disjuntos (`UnionFind`) para saber si dos municipios
+  ya estaban conectados. Es un algoritmo *voraz sobre las aristas*.
+- **Prim** parte de un municipio (por defecto el primero; también configurable) y crece el árbol
+  agregando siempre la arista más barata que conecta un municipio ya incluido con uno nuevo,
+  apoyándose en una cola de prioridad. Es un algoritmo *voraz sobre el frente de expansión*.
+
+Ambos resuelven el mismo problema y, con costos sin empates "ambiguos", producen el mismo árbol.
+El proyecto desempata por nombre para que el resultado sea determinista.
+
+### 9.2 Resultados
+
+Con los 42 datos de `data/conexiones.csv`, los dos algoritmos coinciden: **19 aristas y un costo
+total de 3457.6 km**. La comparación completa —aristas elegidas, costo total, aristas descartadas
+y tiempo medio— está en la tabla generada por el propio código en
+[`docs/tabla-mst.md`](tabla-mst.md):
+
+| Algoritmo | Aristas elegidas | Costo total (km) | Aristas descartadas |
+|---|---:|---:|---:|
+| Kruskal | 19 | 3457.6 | 15 |
+| Prim | 19 | 3457.6 | 7 |
+
+Kruskal mira más aristas porque las recorre en orden global y descarta las que cierran ciclos;
+Prim solo mira las aristas del frente de expansión, así que descarta menos. Los dos tiempos son
+de microsegundos y, con este tamaño de grafo, no son concluyentes.
+
+### 9.3 Por qué el MST no es la ruta más corta entre dos municipios
+
+Son objetivos distintos. El MST minimiza la **suma total** de kilómetros para conectar a *todos* los
+municipios, sin importar qué tan lejos quede cada par; una ruta más corta entre dos municipios
+minimiza el costo **de ese par**, aunque obligue a pasar por muchos otros. Por ejemplo, el MST
+prefiere "Armenia–Pereira–Manizales–Ibagué" (45.5 + 51 + 73.1 km) porque abarata el total, pero
+la ruta más corta entre Santa Marta y Pasto no es un subcamino del MST: usa las conexiones que el
+MST descartó como "caras" porque en conjunto convenían menos. Por eso el MST sirve para diseñar la
+red mínima de carreteras —no para navegar entre dos puntos— y para eso están la búsqueda voraz,
+A\* y Dijkstra.
+
+---
+
+## 10. Limitaciones
 
 - **Los datos son un grafo pequeño y disperso.** 25 conexiones para 20 municipios. El
   comportamiento de los algoritmos cambiaría en una red urbana densa, que es donde los caminos
@@ -423,7 +470,7 @@ municipios sería una equivocación: aquí el problema no es el tiempo, es la ca
 
 ---
 
-## 10. Cómo reproducir todo
+## 11. Cómo reproducir todo
 
 Desde la raíz del repositorio, con JDK 17 o superior y Maven:
 
@@ -441,7 +488,7 @@ El detalle de cada paso está en el [README](../README.md).
 
 ---
 
-## 11. Conclusiones
+## 12. Conclusiones
 
 1. **La búsqueda voraz es rápida pero no confiable.** En el 29 % de los pares devolvió una ruta
    que no era la más corta, con sobrecostos de hasta 162 %. Su utilidad depende de que la
