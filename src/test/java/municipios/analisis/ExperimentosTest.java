@@ -259,4 +259,14 @@ class ExperimentosTest {
             assertTrue(columnas.contains(esperada), () -> "falta la columna " + esperada);
         }
     }
+
+    @Test
+    @DisplayName("La tabla MST compara Kruskal y Prim con el costo total compartido")
+    void tablaMstComparaKruskalYPrim() {
+        String tabla = new Experimentos(grafo, DatosReales.heuristica(), 1).tablaMstMarkdown();
+        assertTrue(tabla.contains("Kruskal"));
+        assertTrue(tabla.contains("Prim"));
+        assertTrue(tabla.contains("3457.6"));
+        assertTrue(tabla.contains("Aristas descartadas"));
+    }
 }

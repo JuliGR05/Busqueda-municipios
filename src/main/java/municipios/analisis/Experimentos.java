@@ -5,7 +5,10 @@ import municipios.algoritmo.BusquedaEstrella;
 import municipios.algoritmo.Dijkstra;
 import municipios.algoritmo.DistanciaLineaRecta;
 import municipios.algoritmo.Heuristica;
+import municipios.algoritmo.Kruskal;
+import municipios.algoritmo.Prim;
 import municipios.algoritmo.ResultadoBusqueda;
+import municipios.algoritmo.ResultadoMST;
 import municipios.datos.CargadorCSV;
 import municipios.modelo.Grafo;
 import municipios.modelo.Municipio;
@@ -323,6 +326,57 @@ public final class Experimentos {
         return sb.toString();
     }
 
+    /**
+     * Tabla Markdown comparando Kruskal y Prim sobre el grafo (issue #37).
+     * Incluye aristas elegidas, costo total, aristas descartadas y tiempo medio.
+     */
+    public String tablaMstMarkdown() {
+        Kruskal kruskal = new Kruskal();
+        Prim prim = new Prim();
+
+        ResultadoMST resKruskal = null;
+        for (int i = 0; i < repeticiones; i++) {
+            resKruskal = kruskal.calcular(grafo);
+        }
+        ResultadoMST resPrim = null;
+        for (int i = 0; i < repeticiones; i++) {
+            resPrim = prim.calcular(grafo);
+        }
+        double tiempoKruskal = medirTiempo(() -> kruskal.calcular(grafo));
+        double tiempoPrim = medirTiempo(() -> prim.calcular(grafo));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("| Algoritmo | Aristas elegidas | Costo total (km) | Aristas consideradas | ")
+          .append("Aristas descartadas | Tiempo medio (µs) |\n");
+        sb.append("|---|---:|---:|---:|---:|---:|\n");
+        sb.append(filaMst("Kruskal", resKruskal, tiempoKruskal));
+        sb.append(filaMst("Prim", resPrim, tiempoPrim));
+        sb.append('\n');
+        if (resKruskal != null && resPrim != null
+                && Math.abs(resKruskal.getCostoTotal() - resPrim.getCostoTotal()) < TOLERANCIA_KM) {
+            sb.append("Ambos algoritmos devolvieron el mismo costo total: ")
+              .append(String.format(Locale.US, "%.1f km.", resKruskal.getCostoTotal()))
+              .append('\n');
+        }
+        if (resKruskal != null) {
+            sb.append("\nAristas elegidas (Kruskal):\n\n");
+            for (municipios.modelo.Grafo.Arista a : resKruskal.getAristas()) {
+                sb.append(String.format(Locale.US, "- %s — %s: %.1f km%n",
+                        a.origen().getNombre(), a.destino().getNombre(), a.distancia()));
+            }
+        }
+        return sb.toString();
+    }
+
+    private static String filaMst(String nombre, ResultadoMST r, double microsegundos) {
+        if (r == null) {
+            return "| " + nombre + " | - | - | - | - | - |\n";
+        }
+        return String.format(Locale.US, "| %s | %d | %.1f | %d | %d | %.1f |\n",
+                nombre, r.getNumeroAristas(), r.getCostoTotal(),
+                r.getAristasConsideradas(), r.getAristasDescartadas(), microsegundos);
+    }
+
     /** Los mismos datos en CSV, con el camino completo como una sola columna. */
     public String csv(List<Fila> filas) {
         StringBuilder sb = new StringBuilder();
@@ -625,7 +679,17 @@ public final class Experimentos {
         Files.writeString(csv, experimentos.csv(filas), StandardCharsets.UTF_8);
         Files.writeString(tabla, tablaConEncabezado(experimentos, filas, global), StandardCharsets.UTF_8);
         Files.writeString(analisis, experimentos.analisis(filas, global), StandardCharsets.UTF_8);
-        System.out.println("\nArchivos escritos:\n  " + csv + "\n  " + tabla + "\n  " + analisis);
+        Path tablaMst = carpetaSalida.resolve("tabla-mst.md");
+        Files.writeString(tablaMst, encabezadoTablaMst(experimentos), StandardCharsets.UTF_8);
+        System.out.println("\nArchivos escritos:\n  " + csv + "\n  " + tabla + "\n  " + analisis + "\n  " + tablaMst);
+    }
+
+    private static String encabezadoTablaMst(Experimentos e) {
+        return "# Tabla de resultados MST\n\n"
+                + "Comparación de Kruskal y Prim sobre los 20 municipios del grafo.\n\n"
+                + "Generado por `municipios.analisis.Experimentos`. No editar a mano: se regenera con\n\n"
+                + "```\nmvn -q compile\njava -cp target/classes municipios.analisis.Experimentos\n```\n\n"
+                + e.tablaMstMarkdown();
     }
 
     private static String tablaConEncabezado(Experimentos e, List<Fila> filas, ResumenGlobal global) {
