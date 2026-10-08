@@ -281,6 +281,14 @@ button{
     Comparar rutas
   </button>
 
+  <div class="mst-control" style="margin:10px 0;">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <input type="checkbox" id="mstToggle">
+      <span>Mostrar árbol de expansión mínima (Kruskal)</span>
+    </label>
+    <p id="mstCosto" class="sub" style="margin:4px 0 0;" hidden></p>
+  </div>
+
 
   <!-- RESULTADOS -->
 
@@ -872,6 +880,82 @@ EDGES.forEach(([a,b,k]) => {
 
   .addTo(map);
 
+});
+
+
+// ÁRBOL DE EXPANSIÓN MÍNIMA (Kruskal) sobre las mismas aristas del CSV
+// Mismo criterio de desempate que municipios.algoritmo.Kruskal:
+// primero km, luego el nombre menor de los extremos y luego el mayor.
+
+function nombreMenor(a, b) {
+  return (a < b || a === b) ? a : b;
+}
+
+function nombreMayor(a, b) {
+  return (a < b || a === b) ? b : a;
+}
+
+const aristasOrdenadas = EDGES
+  .map(([a, b, k]) => [a, b, k])
+  .sort((x, y) => {
+    if (x[2] !== y[2]) return x[2] - y[2];
+    const m1x = nombreMenor(x[0], x[1]), m1y = nombreMenor(y[0], y[1]);
+    if (m1x !== m1y) return m1x < m1y ? -1 : 1;
+    const m2x = nombreMayor(x[0], x[1]), m2y = nombreMayor(y[0], y[1]);
+    return m2x === m2y ? 0 : (m2x < m2y ? -1 : 1);
+  });
+
+const padre = {};
+Object.keys(M).forEach(n => (padre[n] = n));
+
+function find(n) {
+  while (padre[n] !== n) {
+    padre[n] = padre[padre[n]];
+    n = padre[n];
+  }
+  return n;
+}
+
+function union(a, b) {
+  const ra = find(a), rb = find(b);
+  if (ra === rb) return false;
+  padre[ra] = rb;
+  return true;
+}
+
+const aristasMST = [];
+let costoMST = 0;
+
+for (const [a, b, k] of aristasOrdenadas) {
+  if (aristasMST.length === Object.keys(M).length - 1) break;
+  if (union(a, b)) {
+    aristasMST.push([a, b, k]);
+    costoMST += k;
+  }
+}
+
+const capaMST = L.layerGroup();
+
+aristasMST.forEach(([a, b, k]) => {
+  L.polyline([M[a], M[b]], {
+    color: '#e11d48',
+    weight: 4,
+    opacity: 0.95
+  })
+    .bindTooltip(`MST: ${a} - ${b}: ${k} km`, { sticky: true })
+    .addTo(capaMST);
+});
+
+document.getElementById('mstToggle').addEventListener('change', function () {
+  const info = document.getElementById('mstCosto');
+  if (this.checked) {
+    capaMST.addTo(map);
+    info.hidden = false;
+    info.textContent = `${aristasMST.length} aristas · costo total ${costoMST.toFixed(1)} km`;
+  } else {
+    map.removeLayer(capaMST);
+    info.hidden = true;
+  }
 });
 
 
