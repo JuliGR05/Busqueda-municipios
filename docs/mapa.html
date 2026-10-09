@@ -18,6 +18,7 @@
   --avara:#d1495b;
   --astar:#00798c;
   --edge:#9aa5b1;
+  --mst:#6a4c93;
 }
 
 *{
@@ -145,6 +146,28 @@ button{
 
 .sw.s{
   border-color:var(--astar);
+}
+
+.sw.m{
+  border-color:var(--mst);
+}
+
+.mst{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+
+.chk{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 6px;
+  cursor:pointer;
+}
+
+.chk .sw{
+  flex:none;
 }
 
 .stats{
@@ -280,6 +303,21 @@ button{
   <button id="go" type="button">
     Comparar rutas
   </button>
+
+
+  <!-- ÁRBOL DE EXPANSIÓN MÍNIMA -->
+
+  <div class="mst">
+
+    <label class="chk" for="verMST">
+      <input type="checkbox" id="verMST">
+      <span class="sw m"></span>
+      Mostrar árbol de expansión mínima
+    </label>
+
+    <div class="stats" id="infoMST" hidden></div>
+
+  </div>
 
 
   <!-- RESULTADOS -->
@@ -964,6 +1002,170 @@ const km =
 const flecha =
   p =>
     p.join(' → ');
+
+
+// ÁRBOL DE EXPANSIÓN MÍNIMA (Kruskal)
+
+/*
+   Se ordenan las conexiones por km (si hay empate, por nombre, igual que en
+   Kruskal.java) y se acepta cada una solo si NO cierra un ciclo, es decir,
+   si sus dos municipios todavía no estaban conectados por las ya aceptadas.
+   Se calcula con las mismas EDGES de arriba, así que siempre coincide con
+   conexiones.csv.
+*/
+
+function kruskalMST(){
+
+  const padre = {};
+
+  Object.keys(M).forEach(n => {
+    padre[n] = n;
+  });
+
+  // raíz del grupo de x (con compresión de caminos)
+  function raiz(x){
+
+    while(padre[x] !== x){
+
+      padre[x] = padre[padre[x]];
+      x = padre[x];
+    }
+
+    return x;
+  }
+
+  const n = Object.keys(M).length;
+
+  const ordenadas = EDGES.slice().sort((e1,e2) => {
+
+    if(e1[2] !== e2[2]){
+      return e1[2] - e2[2];
+    }
+
+    const men1 = e1[0] < e1[1] ? e1[0] : e1[1];
+    const may1 = e1[0] < e1[1] ? e1[1] : e1[0];
+    const men2 = e2[0] < e2[1] ? e2[0] : e2[1];
+    const may2 = e2[0] < e2[1] ? e2[1] : e2[0];
+
+    if(men1 !== men2){
+      return men1 < men2 ? -1 : 1;
+    }
+
+    if(may1 !== may2){
+      return may1 < may2 ? -1 : 1;
+    }
+
+    return 0;
+  });
+
+  const elegidas = [];
+  let consideradas = 0;
+  let descartadas = 0;
+
+  for(const e of ordenadas){
+
+    if(elegidas.length === n - 1){
+      break;      // ya hay un árbol completo
+    }
+
+    consideradas++;
+
+    const ra = raiz(e[0]);
+    const rb = raiz(e[1]);
+
+    if(ra === rb){
+
+      descartadas++;   // ya estaban conectados: esta arista cerraría un ciclo
+      continue;
+    }
+
+    padre[ra] = rb;
+    elegidas.push(e);
+  }
+
+  return {
+    aristas: elegidas,
+    costo: elegidas.reduce((suma,e) => suma + e[2], 0),
+    consideradas: consideradas,
+    descartadas: descartadas,
+    conexo: elegidas.length === n - 1
+  };
+}
+
+
+const mst = kruskalMST();
+
+const capaMST = L.layerGroup();
+
+mst.aristas.forEach(([a,b,k]) => {
+
+  L.polyline(
+
+    [M[a],M[b]],
+
+    {
+      color:'#6a4c93',
+      weight:5,
+      opacity:.9
+    }
+
+  )
+
+  .bindTooltip(
+
+    `${a} – ${b}: ${k} km (árbol de expansión mínima)`,
+
+    {
+      sticky:true
+    }
+
+  )
+
+  .addTo(capaMST);
+
+});
+
+
+const verMST =
+  document.getElementById('verMST');
+
+const infoMST =
+  document.getElementById('infoMST');
+
+
+function actualizarMST(){
+
+  if(verMST.checked){
+
+    capaMST.addTo(map);
+
+    // las rutas y los municipios quedan por encima del árbol
+    capa.eachLayer(l => l.bringToFront());
+
+    Object.values(marcadores)
+      .forEach(m => m.bringToFront());
+
+    infoMST.innerHTML =
+      `<b>${km(mst.costo)}</b> en total · ` +
+      `${mst.aristas.length} de ${EDGES.length} conexiones<br>` +
+      `Kruskal revisó ${mst.consideradas} conexiones y descartó ` +
+      `${mst.descartadas} por formar ciclo.` +
+      (mst.conexo ? '' : '<br><b>El grafo no es conexo: es un bosque.</b>');
+
+    infoMST.hidden = false;
+
+  } else {
+
+    map.removeLayer(capaMST);
+
+    infoMST.hidden = true;
+  }
+}
+
+verMST.addEventListener(
+  'change',
+  actualizarMST
+);
 
 
 // MOSTRAR TRAZA VORAZ
