@@ -1,10 +1,13 @@
-# Búsqueda voraz y A\* entre 20 municipios de Colombia
+# Búsqueda voraz, A\* y árbol de expansión mínima entre 20 municipios de Colombia
 
 Proyecto en equipo que modela 20 municipios de Colombia como un grafo e implementa dos algoritmos
 de búsqueda informada para encontrar la ruta entre un municipio de origen y uno de destino: la
 **búsqueda voraz (greedy best-first)** y **A\***. Ambos usan como heurística la **distancia en
 línea recta**, calculada con Haversine, y sus resultados se comparan entre sí y contra **Dijkstra**,
 que se usa como referencia del camino realmente más corto.
+
+Además calcula el **árbol de expansión mínima** (MST) del grafo con **Kruskal** y **Prim**: la red
+de carreteras más barata que conecta los 20 municipios sin formar ciclos (19 aristas, 3457,6 km).
 
 ---
 
@@ -24,6 +27,7 @@ que se usa como referencia del camino realmente más corto.
 12. [Convenciones](#12-convenciones)
 13. [Fuentes de los datos](#13-fuentes-de-los-datos)
 14. [Estado del proyecto](#14-estado-del-proyecto)
+15. [Visualización de rutas](#15-visualización-de-rutas)
 
 ---
 
@@ -36,6 +40,12 @@ Dados un municipio de origen **A** y uno de destino **B**, el programa debe:
 - mostrar la ruta, los kilómetros recorridos y los municipios expandidos;
 - comparar ambos algoritmos lado a lado, para analizar cuándo la búsqueda voraz no encuentra la
   mejor ruta y A\* sí.
+
+Y, sobre el mismo grafo completo:
+
+- calcular el **árbol de expansión mínima** con Kruskal y con Prim, y comprobar que los dos
+  coinciden;
+- mostrar las aristas elegidas, los kilómetros totales y las aristas descartadas.
 
 ## 2. Cómo funciona
 
@@ -56,8 +66,18 @@ Dados un municipio de origen **A** y uno de destino **B**, el programa debe:
   recta entre sus extremos, así que h nunca sobrestima. Con eso, más el hecho de que Haversine
   cumple la desigualdad triangular (y por tanto h es consistente), A\* es óptimo.
 - **Limitación de la búsqueda voraz:** no garantiza la ruta óptima. En estos datos devuelve un
-  camino que no es el más corto en 111 de los 380 pares posibles, con sobrecostos de hasta 162 %.
+  camino que no es el más corto en 114 de los 380 pares posibles, con sobrecostos de hasta 162 %.
   Es justo lo que se quiere mostrar al compararla con A\*.
+- **Árbol de expansión mínima (Kruskal y Prim):** no es una búsqueda de rutas sino un problema de
+  cobertura. Se busca el conjunto de conexiones más barato que une a **todos** los municipios sin
+  formar ciclos; para 20 municipios son 19 aristas y 3457,6 km. Kruskal ordena todas las aristas de
+  menor a mayor y acepta una si sus extremos todavía no están conectados, apoyándose en
+  `UnionFind` (conjuntos disjuntos con compresión de caminos y unión por rango). Prim parte de un
+  municipio y crece el árbol agregando siempre la arista más barata que sale del árbol hacia uno
+  que todavía está afuera, con una cola de prioridad. Ambos desempatan por nombre, así que el
+  resultado es siempre el mismo para los mismos datos. Si el grafo no es conexo, Kruskal devuelve un
+  bosque y Prim solo cubre la componente del municipio inicial; `ResultadoMST` avisa con
+  `isConexo()`.
 
 ## 3. Municipios seleccionados
 
@@ -93,7 +113,7 @@ mvn -q compile
 mvn test
 ```
 
-Son **171 pruebas**. Para ver el detalle de una sola clase:
+Son **209 pruebas**. Para ver el detalle de una sola clase:
 
 ```bash
 mvn test -Dtest=BusquedaEstrellaTest
@@ -108,6 +128,10 @@ java -cp target/classes municipios.ui.Main
 Abre un menú por consola que lista los 20 municipios, pide origen y destino (por número o por
 nombre, sin importar mayúsculas ni tildes) y deja hacer consultas seguidas hasta elegir salir.
 Se puede elegir búsqueda voraz, A\* o **ambos** para compararlas lado a lado.
+
+El menú tiene además la **opción 3**, *árbol de expansión mínima*, que calcula el MST con Kruskal,
+con Prim o con ambos, y muestra las aristas elegidas, los kilómetros totales y las aristas
+descartadas.
 
 Para usar otros datos, se indica la carpeta que contiene `municipios.csv` y `conexiones.csv`:
 
@@ -146,23 +170,27 @@ java -cp out municipios.ui.Main
 ├── docs/
 │   ├── informe.md                 el informe de la actividad
 │   ├── diagrama-clases.md         diagrama de clases y arquitectura
-│   ├── tabla-resultados.md        tabla comparativa (generada)
+│   ├── presentacion-mst.md        diapositivas de MST para la presentación
+│   ├── tabla-resultados.md        tabla comparativa voraz / A* / Dijkstra (generada)
+│   ├── tabla-mst.md               tabla comparativa Kruskal / Prim (generada)
 │   ├── analisis-resultados.md     análisis de resultados (generado)
 │   ├── resultados-experimentos.csv datos completos (generado)
 │   ├── validacion-datos.md        qué comprueba el validador de datos
+│   ├── mapa.html                  mapa interactivo de rutas y del MST
 │   └── hoja-municipios-busqueda-voraz.xlsx
 └── src/
     ├── main/java/municipios/
-    │   ├── modelo/                Municipio, Grafo
+    │   ├── modelo/                Municipio, Grafo (con el record Arista)
     │   ├── datos/                 CargadorCSV, ValidadorDatos
     │   ├── algoritmo/             Heuristica, DistanciaLineaRecta,
     │   │                          BusquedaAvara, BusquedaEstrella,
     │   │                          Dijkstra, ResultadoBusqueda,
-    │   │                          ValidadorHeuristica
-    │   ├── analisis/              Experimentos (genera la tabla de resultados)
+    │   │                          ValidadorHeuristica,
+    │   │                          UnionFind, Kruskal, Prim, ResultadoMST
+    │   ├── analisis/              Experimentos (genera las tablas de resultados)
     │   └── ui/                    Main, MenuConsola
     └── test/
-        ├── java/municipios/       171 pruebas con JUnit 5
+        ├── java/municipios/       209 pruebas con JUnit 5
         │   └── DatosReales.java   helper para cargar los CSV reales en las pruebas
         └── resources/csv/         CSV de prueba que se cargan desde el classpath
 ```
@@ -213,12 +241,12 @@ Todas se ejecutan desde la raíz del repositorio, después de `mvn -q compile`.
 | Valida los CSV (29 verificaciones) | `java -cp target/classes municipios.datos.ValidadorDatos` |
 | Valida otros CSV | `java -cp target/classes municipios.datos.ValidadorDatos ruta/municipios.csv ruta/conexiones.csv` |
 | Reporte de la heurística (admisible y consistente) | `java -cp target/classes municipios.algoritmo.ValidadorHeuristica` |
-| Regenera la tabla y el análisis de resultados | `java -cp target/classes municipios.analisis.Experimentos` |
+| Regenera las tablas y el análisis de resultados | `java -cp target/classes municipios.analisis.Experimentos` |
 
 `ValidadorDatos` termina con código 0 si no hay errores y con 1 si hay alguno, así que sirve en
 integración continua. `Experimentos` escribe `docs/tabla-resultados.md`,
-`docs/resultados-experimentos.csv` y `docs/analisis-resultados.md`; los tres son generados y no
-deben editarse a mano.
+`docs/resultados-experimentos.csv`, `docs/analisis-resultados.md` y `docs/tabla-mst.md`; los cuatro
+son generados y no deben editarse a mano.
 
 ## 9. Documentos del proyecto
 
@@ -227,8 +255,11 @@ deben editarse a mano.
 | [`docs/informe.md`](docs/informe.md) | El informe de la actividad: problema, algoritmos, heurística, datos, resultados y conclusiones |
 | [`docs/diagrama-clases.md`](docs/diagrama-clases.md) | Diagrama de clases y de paquetes, y el flujo de los datos |
 | [`docs/tabla-resultados.md`](docs/tabla-resultados.md) | Tabla comparativa voraz / A\* / Dijkstra (generada) |
+| [`docs/tabla-mst.md`](docs/tabla-mst.md) | Tabla comparativa Kruskal / Prim del árbol de expansión mínima (generada) |
 | [`docs/analisis-resultados.md`](docs/analisis-resultados.md) | Análisis de los resultados, con los casos donde la voraz falla (generado) |
 | [`docs/validacion-datos.md`](docs/validacion-datos.md) | Detalle de las 29 verificaciones del validador |
+| [`docs/presentacion-mst.md`](docs/presentacion-mst.md) | Diapositivas de MST para la presentación |
+| [`docs/mapa.html`](docs/mapa.html) | Mapa interactivo: rutas de voraz y A\*, y capa con el MST |
 
 ## 10. Equipo y división del trabajo
 
@@ -247,6 +278,14 @@ redacta su sección del informe.
 | **Pruebas** | Suite de JUnit y CSV de prueba | `feature/8-pruebas` |
 | **Experimentos** | Tabla comparativa y análisis de resultados | `feature/9-experimentos` |
 | **Informe y cierre** | README, informe, diagrama, integración final | `feature/10-documentacion` |
+| **MST: base de datos** | `Grafo.Arista`, `Grafo.getAristas()` y `ResultadoMST` | `feature/31-resultado-mst-aristas` |
+| **MST: conjuntos disjuntos** | `UnionFind` con compresión de caminos y unión por rango | `feature/30-union-find` |
+| **MST: Kruskal** | `Kruskal` con desempate determinista y bosque si no es conexo | `feature/32-kruskal` |
+| **MST: Prim** | `Prim` con cola de prioridad y municipio inicial configurable | `feature/33-prim` |
+| **MST: validación cruzada** | Prueba de que Kruskal y Prim dan el mismo árbol | `feature/36-validacion-cruzada` |
+| **MST: menú y mapa** | Opción 3 del menú y capa del MST en `docs/mapa.html` | `feature/35-menu-mst`, `feature/38-mst-mapa` |
+| **MST: tabla e informe** | `docs/tabla-mst.md` y sección 9 de `docs/informe.md` | `feature/37-mst-experimentos`, `feature/39-mst-informe` |
+| **MST: documentación** | README, diagrama de clases y diapositivas | `feature/40-mst-docs` |
 
 **Quién necesita qué de quién**
 
@@ -258,6 +297,9 @@ redacta su sección del informe.
 | Estructura | Búsqueda voraz y A\* | Clases `Municipio` y `Grafo` |
 | Búsqueda voraz | Estructura | Clase de búsqueda para conectar al menú |
 | Todos | A\* | Su sección del informe |
+| Estructura | MST | `Grafo.getAristas()`: cada conexión una sola vez |
+| UnionFind | Kruskal | Detectar ciclos al elegir aristas |
+| Kruskal y Prim | MST: tabla e informe | Mismo costo total, 19 aristas |
 
 ## 11. Flujo de ramas y trabajo en Git
 
@@ -313,12 +355,20 @@ revisión de otro integrante.
 - [x] Búsqueda voraz
 - [x] A\*
 - [x] Interfaz de consola con las dos búsquedas
-- [x] Pruebas unitarias (171, en verde con `mvn test`)
+- [x] Pruebas unitarias (209, en verde con `mvn test`)
 - [x] Tabla comparativa y análisis de resultados
 - [x] Informe y diagrama de clases
-- [ ] Presentación
+- [x] `UnionFind`, Kruskal y Prim
+- [x] `ResultadoMST` y aristas únicas en `Grafo`
+- [x] Opción de MST en el menú de consola
+- [x] Validación cruzada Kruskal vs Prim
+- [x] Tabla `docs/tabla-mst.md` generada por `Experimentos`
+- [x] Capa del MST en `docs/mapa.html`
+- [x] Sección 9 del informe sobre MST
+- [x] Diapositivas de MST (`docs/presentacion-mst.md`)
+- [ ] Presentación completa del proyecto (las diapositivas de MST ya están escritas)
 
-## 15.Visualización de rutas
+## 15. Visualización de rutas
 
 El proyecto cuenta con un mapa interactivo desarrollado en HTML para visualizar
 gráficamente las rutas encontradas por los algoritmos de búsqueda voraz y A*.
@@ -349,6 +399,8 @@ El mapa permite:
 - Mostrar los municipios que forman parte de cada camino.
 - Consultar información del proceso de decisión de cada algoritmo, incluyendo
   `h(n)`, `g(n)` y `f(n)` según corresponda.
+- Activar una **capa del árbol de expansión mínima**, que resalta las 19 aristas del MST y
+  muestra su costo total (3457,6 km).
 
 La búsqueda voraz selecciona los municipios utilizando únicamente la heurística:
 
