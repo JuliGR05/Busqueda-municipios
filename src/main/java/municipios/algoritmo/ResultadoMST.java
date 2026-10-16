@@ -15,9 +15,22 @@ public class ResultadoMST {
     private final int aristasConsideradas;
     private final int aristasDescartadas;
     private final boolean conexo;
+    private final long tiempoEjecucionNs;
 
     public ResultadoMST(List<Arista> aristas, int aristasConsideradas,
                         int aristasDescartadas, boolean conexo) {
+        this(aristas, aristasConsideradas, aristasDescartadas, conexo, 0L);
+    }
+
+    /**
+     * @param aristas las aristas elegidas, en el orden en que el algoritmo las agregó
+     * @param aristasConsideradas cuántas aristas miró el algoritmo antes de terminar
+     * @param aristasDescartadas cuántas aristas descartó por formar un ciclo
+     * @param conexo true si el árbol conecta todos los municipios
+     * @param tiempoEjecucionNs nanosegundos que tardó el algoritmo (0 si no se midió)
+     */
+    public ResultadoMST(List<Arista> aristas, int aristasConsideradas,
+                        int aristasDescartadas, boolean conexo, long tiempoEjecucionNs) {
         this.aristas = List.copyOf(aristas);
         double suma = 0;
         for (Arista a : this.aristas) {
@@ -27,6 +40,7 @@ public class ResultadoMST {
         this.aristasConsideradas = aristasConsideradas;
         this.aristasDescartadas = aristasDescartadas;
         this.conexo = conexo;
+        this.tiempoEjecucionNs = Math.max(0L, tiempoEjecucionNs);
     }
 
     /** @return las aristas elegidas, en el orden en que el algoritmo las agregó */
@@ -46,6 +60,15 @@ public class ResultadoMST {
 
     /** @return true si el árbol conecta todos los municipios */
     public boolean isConexo() { return conexo; }
+
+    /** @return nanosegundos que tardó el algoritmo; 0 si se construyó sin medir. */
+    public long getTiempoEjecucionNs() { return tiempoEjecucionNs; }
+
+    /** @return microsegundos que tardó el algoritmo. */
+    public double getTiempoEjecucionMicros() { return tiempoEjecucionNs / 1_000.0; }
+
+    /** @return milisegundos que tardó el algoritmo. */
+    public double getTiempoEjecucionMs() { return tiempoEjecucionNs / 1_000_000.0; }
 
     @Override
     public String toString() {
