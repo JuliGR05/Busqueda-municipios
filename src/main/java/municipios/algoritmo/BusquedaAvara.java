@@ -71,6 +71,7 @@ public class BusquedaAvara {
      * @return resultado con encontrado=false si no hay camino entre ambos.
      */
     public ResultadoBusqueda buscar(Municipio origen, Municipio destino) {
+        long inicio = System.nanoTime();
         // Caso: municipios inexistentes
         if (origen == null) {
             throw new IllegalArgumentException("El municipio de origen no existe.");
@@ -83,7 +84,7 @@ public class BusquedaAvara {
         if (origen.equals(destino)) {
             List<Municipio> camino = new ArrayList<>();
             camino.add(origen);
-            return new ResultadoBusqueda(camino, 0.0, 0, true);
+            return new ResultadoBusqueda(camino, 0.0, 0, true, System.nanoTime() - inicio);
         }
 
         // Frontera ordenada por h(n), menor primero
@@ -107,7 +108,7 @@ public class BusquedaAvara {
             // Prueba de meta al sacar de la frontera
             if (actual.municipio.equals(destino)) {
                 return new ResultadoBusqueda(reconstruirCamino(actual),
-                        actual.costoAcumulado, nodosExpandidos, true);
+                        actual.costoAcumulado, nodosExpandidos, true, System.nanoTime() - inicio);
             }
 
             visitados.add(actual.municipio);
@@ -123,7 +124,7 @@ public class BusquedaAvara {
         }
 
         // Frontera vacía: no hay ruta entre origen y destino
-        return new ResultadoBusqueda(new ArrayList<>(), 0.0, nodosExpandidos, false);
+        return new ResultadoBusqueda(new ArrayList<>(), 0.0, nodosExpandidos, false, System.nanoTime() - inicio);
     }
 
     private List<Municipio> reconstruirCamino(Nodo meta) {

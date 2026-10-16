@@ -39,6 +39,7 @@ public class Kruskal {
      */
     
     public ResultadoMST calcular (Grafo grafo){
+        long inicio = System.nanoTime();
         if (grafo == null){
             throw new IllegalArgumentException("El grafo no puede ser null.");
         }
@@ -77,7 +78,7 @@ public class Kruskal {
     //Quedó un solo grupo => todos los municipios están conectados.
     // (Con 0 o 1 municipios no hay nada que conectar, y también cuenta como conexo.)
     boolean conezo = grupos.getComponentes() <= 1;
-    return new ResultadoMST(elegidas, consideradas, descartadas, conezo);
+    return new ResultadoMST(elegidas, consideradas, descartadas, conezo, System.nanoTime() - inicio);
     }
 
     private static String nombreMenor(Arista a){

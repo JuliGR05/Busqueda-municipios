@@ -105,7 +105,7 @@ public class BusquedaEstrella {
             Municipio origen,
             Municipio destino) {
 
-        
+        long inicio = System.nanoTime();
         // 1. Validar que los municipios existan.
         if (origen == null) {
             throw new IllegalArgumentException(
@@ -130,7 +130,8 @@ public class BusquedaEstrella {
                     camino,
                     0.0,
                     0,
-                    true
+                    true,
+                    System.nanoTime() - inicio
             );
         }
 
@@ -259,7 +260,8 @@ public class BusquedaEstrella {
                         reconstruirCamino(actual),
                         actual.g,
                         nodosExpandidos,
-                        true
+                        true,
+                        System.nanoTime() - inicio
                 );
             }
 
@@ -325,7 +327,8 @@ public class BusquedaEstrella {
                 new ArrayList<>(),
                 0.0,
                 nodosExpandidos,
-                false
+                false,
+                System.nanoTime() - inicio
         );
     }
 

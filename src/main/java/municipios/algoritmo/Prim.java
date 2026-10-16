@@ -33,13 +33,14 @@ public class Prim {
     }
 
     public ResultadoMST calcular(Grafo grafo, Municipio inicio) {
+        long tiempoInicio = System.nanoTime();
         if (grafo == null) {
             throw new IllegalArgumentException("El grafo no puede ser null.");
         }
 
         List<Municipio> municipios = grafo.getMunicipios();
         if (municipios.isEmpty()) {
-            return new ResultadoMST(List.of(), 0, 0, true);
+            return new ResultadoMST(List.of(), 0, 0, true, System.nanoTime() - tiempoInicio);
         }
 
         Municipio raiz = (inicio != null) ? inicio : municipios.get(0);
@@ -70,7 +71,7 @@ public class Prim {
         }
 
         boolean conexo = visitados.size() == municipios.size();
-        return new ResultadoMST(elegidas, consideradas, descartadas, conexo);
+        return new ResultadoMST(elegidas, consideradas, descartadas, conexo, System.nanoTime() - tiempoInicio);
     }
 
     private static void agregarAristasDeSalida(Grafo grafo, Municipio desde,

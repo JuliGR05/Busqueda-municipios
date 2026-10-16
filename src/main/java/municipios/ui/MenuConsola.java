@@ -298,6 +298,7 @@ public class MenuConsola {
         out.println("  Aristas elegidas: " + r.getNumeroAristas());
         out.println("  Costo total: " + km(r.getCostoTotal()));
         out.println("  Aristas descartadas: " + r.getAristasDescartadas());
+        out.println("  Tiempo de ejecución: " + formatearTiempo(r.getTiempoEjecucionNs()));
         for (Arista a : r.getAristas()) {
             out.println("    " + a.origen() + " - " + a.destino() + ": " + km(a.distancia()));
         }
@@ -334,12 +335,14 @@ public class MenuConsola {
             out.println("  No se encontró una ruta entre " + origen + " y " + destino + ".");
             out.println("  Se revisaron " + r.getNodosExpandidos() + " municipio(s) sin llegar al destino; "
                     + "puede que no estén conectados en los datos.");
+            out.println("  Tiempo de ejecución: " + formatearTiempo(r.getTiempoEjecucionNs()));
             return;
         }
         out.println("  Camino: " + camino(r));
         out.println("  Municipios en el camino: " + r.getCamino().size());
         out.println("  Costo total: " + km(r.getCostoTotal()));
         out.println("  Nodos expandidos: " + r.getNodosExpandidos());
+        out.println("  Tiempo de ejecución: " + formatearTiempo(r.getTiempoEjecucionNs()));
     }
 
     private void mostrarComparacion(Municipio origen, Municipio destino, List<Algoritmo> algoritmos,
@@ -357,12 +360,15 @@ public class MenuConsola {
         out.printf(formato, "Costo total", km(ra.getCostoTotal()), km(rb.getCostoTotal()));
         out.printf(formato, "Nodos expandidos", ra.getNodosExpandidos(), rb.getNodosExpandidos());
         out.printf(formato, "Municipios en el camino", ra.getCamino().size(), rb.getCamino().size());
+        out.printf(formato, "Tiempo de ejecución",
+                formatearTiempo(ra.getTiempoEjecucionNs()), formatearTiempo(rb.getTiempoEjecucionNs()));
         out.println();
         out.println("  Camino (" + a.nombre() + "): " + camino(ra));
         out.println("  Camino (" + b.nombre() + "): " + camino(rb));
         out.println();
         out.println("Diferencia de costo: " + diferenciaDeCosto(a.nombre(), ra, b.nombre(), rb));
         out.println("Diferencia de nodos expandidos: " + diferenciaDeNodos(a.nombre(), ra, b.nombre(), rb));
+        out.println("Diferencia de tiempo: " + diferenciaDeTiempo(a.nombre(), ra, b.nombre(), rb));
     }
 
     private static String diferenciaDeCosto(String nombreA, ResultadoBusqueda ra, String nombreB, ResultadoBusqueda rb) {
@@ -385,6 +391,20 @@ public class MenuConsola {
         }
         String menos = na < nb ? nombreA : nombreB;
         return menos + " expandió " + Math.abs(na - nb) + " nodo(s) menos (" + na + " frente a " + nb + ").";
+    }
+
+    private static String diferenciaDeTiempo(String nombreA, ResultadoBusqueda ra, String nombreB, ResultadoBusqueda rb) {
+        long ta = ra.getTiempoEjecucionNs();
+        long tb = rb.getTiempoEjecucionNs();
+        if (ta == tb) {
+            return "ambos tardaron lo mismo (" + formatearTiempo(ta) + ").";
+        }
+        String rapido = ta < tb ? nombreA : nombreB;
+        String lento = ta < tb ? nombreB : nombreA;
+        long menor = Math.min(ta, tb);
+        long mayor = Math.max(ta, tb);
+        return rapido + " fue más rápido que " + lento + " ("
+                + formatearTiempo(menor) + " frente a " + formatearTiempo(mayor) + ").";
     }
 
     
@@ -423,6 +443,21 @@ public class MenuConsola {
 
     private static String km(double valor) {
         return String.format(Locale.US, "%.1f km", valor);
+    }
+
+    /**
+     * Tiempo en nanosegundos a texto legible: ns, µs o ms según la magnitud.
+     * Con 20 municipios los algoritmos corren en microsegundos.
+     */
+    static String formatearTiempo(long nanosegundos) {
+        long ns = Math.max(0L, nanosegundos);
+        if (ns < 1_000) {
+            return ns + " ns";
+        }
+        if (ns < 1_000_000) {
+            return String.format(Locale.US, "%.1f µs", ns / 1_000.0);
+        }
+        return String.format(Locale.US, "%.3f ms", ns / 1_000_000.0);
     }
 
     private List<String> sugerencias(String texto) {

@@ -193,4 +193,33 @@ public final class Dijkstra {
         Collections.reverse(camino);
         return camino;
     }
+
+    /**
+     * Dijkstra envuelto en un {@link ResultadoBusqueda} con tiempo de ejecución.
+     *
+     * <p>Mide con {@code System.nanoTime()} el cálculo del camino mínimo y cuenta las
+     * expansiones con la misma convención que A* (el destino no se expande).</p>
+     *
+     * @param grafo grafo no dirigido con distancias en km (no null)
+     * @param origen municipio de partida (no null, debe estar en el grafo)
+     * @param destino municipio objetivo (no null, debe estar en el grafo)
+     * @return resultado con camino, costo, expansiones, encontrado y nanosegundos
+     */
+    public static ResultadoBusqueda buscarConTiempo(Grafo grafo, Municipio origen, Municipio destino) {
+        if (grafo == null || origen == null || destino == null) {
+            throw new IllegalArgumentException("El grafo, el origen y el destino no pueden ser null.");
+        }
+        long inicio = System.nanoTime();
+        List<Municipio> camino = caminoMinimo(grafo, origen, destino);
+        double costo = costoMinimo(grafo, origen, destino);
+        int expansiones = expansionesHasta(grafo, origen, destino);
+        long tiempoNs = System.nanoTime() - inicio;
+        boolean encontrado = !camino.isEmpty();
+        double costoResultado = encontrado ? costo : 0.0;
+        if (Double.isInfinite(costoResultado)) {
+            costoResultado = 0.0;
+        }
+        return new ResultadoBusqueda(new ArrayList<>(camino), costoResultado,
+                expansiones, encontrado, tiempoNs);
+    }
 }
